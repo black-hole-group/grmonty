@@ -60,7 +60,7 @@ in the model file.
 
 - [ ] make it work with HARMPI/HARM3D
 - [ ] make it work with RAISHIN
-- [ ] add LICENSE
+- [x] add LICENSE
 
 # References
 
