@@ -3,9 +3,7 @@ GRMONTY: A relativistic Monte Carlo code
 
 Based on [Dolence et al. 2009 ApJ](http://adsabs.harvard.edu/abs/2009ApJS..184..387D). Originally downloaded from [Astrophysical Code Library](http://rainman.astro.illinois.edu/codelib/) @ [UI](http://illinois.edu).
 
-GRMONTY is parallelized using [OpenMP](https://en.wikipedia.org/wiki/OpenMP).
-
-This version is configured to use input from [`harm2d`](http://rainman.astro.illinois.edu/codelib/codes/ham2d/src/), which is also available on this site.
+GRMONTY is parallelized using [OpenMP](https://en.wikipedia.org/wiki/OpenMP). This version is configured to use input from [`harm2d`](http://rainman.astro.illinois.edu/codelib/codes/ham2d/src/).
 
 # quick start
 
