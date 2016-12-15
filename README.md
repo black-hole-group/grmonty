@@ -15,9 +15,13 @@ make (requires openmp enabled gcc):
 
     make
 
-set number of threads (example is for csh and 8 threads):
+set number of threads for `csh` and 8 threads:
 
     setenv OMP_NUM_THREADS 8
+
+if using `bash`:
+
+    export OMP_NUM_THREADS=8
 
 run the code on the supplied harm output file:
 
@@ -31,12 +35,13 @@ Arguments are:
 
 This will output spectrum to `grmonty.spec`  which should be identical to `grmonty_spec_verify`.
 
-Then use SM script `plspec` to plot up broad-band spectral energy distribution.
+## Plotting
 
-To calculate spectra from other sources, replace `harm_model.c`
-with your own source model.  Begin by modifying `harm_model.c`.
+Use SM script `plspec` to plot up broad-band spectral energy distribution.
 
-You must supply
+## Calculate spectra from other sources
+
+Replace `harm_model.c` with your own source model.  Begin by modifying `harm_model.c`. You must supply
 
 ```
 init_model 
