@@ -35,11 +35,20 @@ Arguments are:
 
 This will output spectrum to `grmonty.spec`  which should be identical to `grmonty_spec_verify`.
 
-## Plotting
+# Plotting
 
-Use SM script `plspec` to plot up broad-band spectral energy distribution.
+Use python and the [`nmmn`](https://github.com/rsnemmen/nmmn) module:
 
-## Calculate spectra from other sources
+```python
+import nmmn.sed
+s=nmmn.sed.SED()
+s.grmonty('grmonty.spec')
+plot(s.lognu, s.ll)
+```
+
+Old-fashioned way: Use the [SM](http://www.astro.princeton.edu/~rhl/sm/) script `plspec.m` to plot up broad-band spectral energy distribution.
+
+# Calculate spectra from other sources
 
 Replace `harm_model.c` with your own source model.  Begin by modifying `harm_model.c`. You must supply
 
