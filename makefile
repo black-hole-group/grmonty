@@ -43,7 +43,7 @@
 # requires an openmp-enabled version of gcc
 #
 CC = gcc
-CFLAGS = -Wall -O2 -fopenmp
+CFLAGS = -Wall -O2 -fopenmp -I/sto/nemmen/silo1/usrlocal/include
 LDFLAGS = -lm -L/sto/nemmen/silo1/usrlocal/lib -lgsl -lgslcblas -fopenmp
 
 SRCS = grmonty.c compton.c init_geometry.c tetrads.c geodesics.c \
