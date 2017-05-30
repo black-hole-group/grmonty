@@ -70,10 +70,11 @@ in the model file.
 
 # TODO
 
-- [ ] make it work with HARMPI/HARM3D
+- [ ] make it work with [HARMPI](https://github.com/atchekho/harmpi)
+- [ ] GPU support: OpenCL
 - [ ] make it work with RAISHIN
 - [x] add LICENSE
-- [ ] parallelize with MPI?
+- [ ] parallelize with MPI
 
 # References
 
