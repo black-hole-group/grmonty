@@ -72,9 +72,11 @@ in the model file.
 
 - [ ] make it work with [HARMPI](https://github.com/atchekho/harmpi)
 - [ ] GPU support: OpenCL
-- [ ] make it work with RAISHIN
-- [x] add LICENSE
 - [ ] parallelize with MPI
+- [ ] add bremsstrahlung
+- [ ] nonthermal electron distribution
+- [ ] dynamic metrics as input
+- [x] add LICENSE
 
 # References
 
