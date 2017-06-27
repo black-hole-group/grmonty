@@ -44,7 +44,7 @@
 #
 CC = gcc
 CFLAGS = -Wall -O2 -fopenmp
-LDFLAGS = -lm -lgsl -lgslcblas -fopenmp
+LDFLAGS = -lm -lgsl -lgslcblas -fopenmp -lncurses -lprogressbar
 
 SRCS = grmonty.c compton.c init_geometry.c tetrads.c geodesics.c \
 radiation.c jnu_mixed.c hotcross.c track_super_photon.c \
