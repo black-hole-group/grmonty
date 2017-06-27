@@ -114,7 +114,6 @@ int main(int argc, char *argv[])
 	int quit_flag, myid;
 	struct of_photon ph;
 	time_t currtime, starttime;
-	char pbar[11]; 
 
 	if (argc < 3) {
 		fprintf(stderr, "usage: grmonty Ns infilename M_unit\n");
@@ -145,7 +144,7 @@ int main(int argc, char *argv[])
 	quit_flag = 0;
 
 	fprintf(stderr, "Entering main loop...\n");
-	progressbar *status = progressbar_new("Creating photons",100); // progress bar
+	progressbar *status = progressbar_new("Progress",100); // progress bar
 	fflush(stderr);
 
 #pragma omp parallel private(ph)
@@ -173,10 +172,9 @@ int main(int argc, char *argv[])
 			if (((int) (N_superph_made)) % 100000 == 0
 			    && N_superph_made > 0) {
 				currtime = time(NULL);
+				//fprintf(stderr, "time %g, rate %g ph/s\n", (double) (currtime - starttime), N_superph_made / (currtime - starttime));			
 				// progress bar update
-				//sprintf(pbar, "%.1e ph/s", N_superph_made/(currtime - starttime)); // updated progress bar label
-				progressbar_update(status, (int) 100*N_superph_recorded/(3*Ntot)); // updates progress bar
-				//progressbar_update_label(status,pbar);
+				progressbar_update(status, 100*N_superph_recorded/(3.4*Ntot)); // updates progress bar
 			}
 		}
 	}
