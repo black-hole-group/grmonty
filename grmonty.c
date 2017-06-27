@@ -174,9 +174,9 @@ int main(int argc, char *argv[])
 			    && N_superph_made > 0) {
 				currtime = time(NULL);
 				// progress bar update
-				sprintf(pbar, "%.1e ph/s", N_superph_made/(currtime - starttime)); // updated progress bar label
+				//sprintf(pbar, "%.1e ph/s", N_superph_made/(currtime - starttime)); // updated progress bar label
 				progressbar_update(status, (int) 100*N_superph_recorded/(3*Ntot)); // updates progress bar
-				progressbar_update_label(status,pbar);
+				//progressbar_update_label(status,pbar);
 			}
 		}
 	}
