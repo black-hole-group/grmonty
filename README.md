@@ -72,17 +72,12 @@ in the model file.
 
 # TODO
 
-<<<<<<< HEAD
-- [ ] make it work with HARMPI/HARM3D
-- [ ] make it work with RAISHIN
-=======
 - [ ] make it work with [HARMPI](https://github.com/atchekho/harmpi)
 - [ ] GPU support: OpenCL
 - [ ] parallelize with MPI
 - [ ] add bremsstrahlung
 - [ ] nonthermal electron distribution
 - [ ] dynamic metrics as input
->>>>>>> progressbar
 - [x] add LICENSE
 
 # References
