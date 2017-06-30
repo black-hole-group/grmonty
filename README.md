@@ -35,6 +35,8 @@ Arguments are:
 
 This will output spectrum to `grmonty.spec`  which should be identical to `grmonty_spec_verify`.
 
+![GIF created with `ttygif`](./tty.gif)
+
 # Plotting
 
 Use python and the [`nmmn`](https://github.com/rsnemmen/nmmn) module:
