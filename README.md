@@ -70,6 +70,11 @@ get_connection
 
 in the model file.
 
+# Dependencies
+
+- GNU Scientific Library (`gsl`)
+- [`progressbar` library](https://github.com/rsnemmen/progressbar) for displaying progress bar
+
 # TODO
 
 - [ ] make it work with [HARMPI](https://github.com/atchekho/harmpi)
@@ -79,6 +84,7 @@ in the model file.
 - [ ] nonthermal electron distribution
 - [ ] dynamic metrics as input
 - [x] add LICENSE
+- [x] progress bar
 
 # References
 
