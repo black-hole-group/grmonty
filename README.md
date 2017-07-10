@@ -25,7 +25,7 @@ if using `bash`:
 
 run the code on the supplied harm output file:
 
-    ./grmonty 5000000 dump019 4.e19 >&! grmonty.err
+    ./grmonty 5000000 dump019 4.e19 
 
 Arguments are:
 
