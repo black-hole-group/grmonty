@@ -50,7 +50,6 @@
 #define global
 #include "harm_model.h"
 #undef global
-
 struct of_spectrum spect[N_THBINS][N_EBINS] = { };
 
 #pragma omp threadprivate(spect)
@@ -68,16 +67,20 @@ void init_model(char *args[])
 	set_units(args[3]);
 
 	fprintf(stderr, "getting simulation data...\n");
+	#if(HAMR)
+	init_hamr_data(args[2]); /*PEDRO EDIT -> file to read H-AMR data*/
+	#else
 	init_harm_data(args[2]);	/* read in HARM simulation data */
-
+	#endif
 	/* initialize the metric */
 	fprintf(stderr, "initializing geometry...\n");
 	fflush(stderr);
 	init_geometry();
 	fprintf(stderr, "done.\n\n");
 	fflush(stderr);
-
+	a = 0.9375;
 	Rh = 1 + sqrt(1. - a * a);
+	fprintf(stderr, "Rh = %le\n", Rh);
 
 	/* make look-up table for hot cross sections */
 	init_hotcross();
@@ -191,6 +194,7 @@ void get_fluid_zone(int i, int j, double *Ne, double *Thetae, double *B,
 	*B = sqrt(Bcon[0] * Bcov[0] + Bcon[1] * Bcov[1] +
 		  Bcon[2] * Bcov[2] + Bcon[3] * Bcov[3]) * B_unit;
 
+
 }
 
 void get_fluid_params(double X[NDIM], double gcov[NDIM][NDIM], double *Ne,
@@ -204,7 +208,6 @@ void get_fluid_params(double X[NDIM], double gcov[NDIM][NDIM], double *Ne,
 	double Bp[NDIM], Vcon[NDIM], Vfac, VdotV, UdotBp;
 	double gcon[NDIM][NDIM], coeff[4];
 	double interp_scalar(double **var, int i, int j, double del[4]);
-
 	if (X[1] < startx[1] ||
 	    X[1] > stopx[1] || X[2] < startx[2] || X[2] > stopx[2]) {
 
@@ -234,8 +237,11 @@ void get_fluid_params(double X[NDIM], double gcov[NDIM][NDIM], double *Ne,
 	Vcon[2] = interp_scalar(p[U2], i, j, coeff);
 	Vcon[3] = interp_scalar(p[U3], i, j, coeff);
 
+	#if(HAMR)
+	gcon_func_hamr(gcov, gcon);
+	#else
 	gcon_func(X, gcon);
-
+	#endif
 	/* Get Ucov */
 	VdotV = 0.;
 	for (i = 1; i < NDIM; i++)
@@ -278,14 +284,18 @@ void gcon_func(double *X, double gcon[][NDIM])
 
 	int k, l;
 	double sth, cth, irho2;
-	double r, th;
+	double r, th, phi;
 	double hfac;
 	/* required by broken math.h */
 	void sincos(double in, double *sth, double *cth);
 
 	DLOOP gcon[k][l] = 0.;
-
+	#if(HAMR)
+	bl_coord_hamr(X, &r, &th, &phi);
+	#else
 	bl_coord(X, &r, &th);
+	#endif
+
 
 	sincos(th, &sth, &cth);
 	sth = fabs(sth) + SMALL;
@@ -308,20 +318,21 @@ void gcon_func(double *X, double gcon[][NDIM])
 	gcon[3][3] = irho2 / (sth * sth);
 }
 
-
 void gcov_func(double *X, double gcov[][NDIM])
 {
 	int k, l;
 	double sth, cth, s2, rho2;
-	double r, th;
+	double r, th, phi;
 	double tfac, rfac, hfac, pfac;
 	/* required by broken math.h */
 	void sincos(double th, double *sth, double *cth);
 
 	DLOOP gcov[k][l] = 0.;
-
+	#if(HAMR)
+	bl_coord_hamr(X, &r, &th, &phi);
+	#else
 	bl_coord(X, &r, &th);
-
+	#endif
 	sincos(th, &sth, &cth);
 	sth = fabs(sth) + SMALL;
 	s2 = sth * sth;
@@ -348,6 +359,9 @@ void gcov_func(double *X, double gcov[][NDIM])
 	gcov[3][3] =
 	    s2 * (rho2 + a * a * s2 * (1. + 2. * r / rho2)) * pfac * pfac;
 }
+
+
+
 
 #undef TT
 #undef RR
@@ -533,7 +547,6 @@ int stop_criterion(struct of_photon *ph)
 	double wmin, X1min, X1max;
 
 	wmin = WEIGHT_MIN;	/* stop if weight is below minimum weight */
-
 	X1min = log(Rh);	/* this is coordinate-specific; stop
 				   at event horizon */
 	X1max = log(RMAX);	/* this is coordinate and simulation
@@ -601,6 +614,12 @@ double stepsize(double X[NDIM], double K[NDIM])
 	idlx3 = 1. / (fabs(dlx3) + SMALL);
 
 	dl = 1. / (idlx1 + idlx2 + idlx3);
+	if (dl > 3e-8){
+		fprintf(stderr, "wait!\n");
+	}
+	if (dl > 1){
+		fprintf(stderr, "wait!\n");
+	}
 
 	return (dl);
 }
@@ -742,7 +761,7 @@ void omp_reduce_spect()
 
 */
 
-#define SPECTRUM_FILE_NAME	"grmonty.spec"
+#define SPECTRUM_FILE_NAME	"grmonty_hamr.spec"
 
 void report_spectrum(int N_superph_made)
 {

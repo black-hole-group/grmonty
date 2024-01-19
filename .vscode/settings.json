@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "*.txt": "csv",
+        "cmath": "c",
+        "complex": "c",
+        "harm_model.h": "c",
+        "type_traits": "c"
+    }
+}

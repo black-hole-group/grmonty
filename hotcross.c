@@ -68,7 +68,7 @@
 #define HOTCROSS	"hotcross.dat"
 
 double table[NW + 1][NT + 1];
-double dlw, dlT, lminw, lmint;
+double dlw, dlT, lminw, lmint; 
 
 void init_hotcross(void)
 {

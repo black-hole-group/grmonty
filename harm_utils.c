@@ -41,6 +41,7 @@
 
 
 #include "decs.h"
+#include "harm_model.h"
 
 /* Harm globals */
 extern double ****econ;
@@ -158,9 +159,12 @@ void init_weight_table(void)
 				fac =
 				    (JCST * Ne * B * Thetae * Thetae /
 				     K2) * sfac * geom[i][j].g;
-				for (l = lstart; l < lend; l++)
+				for (l = lstart; l < lend; l++){
+					//fprintf(stderr, "external B = %le\n", B);
 					sum[l] +=
 					    fac * F_eval(Thetae, B, nu[l]);
+					
+				}
 			}
 #pragma omp barrier
 	}
@@ -333,13 +337,16 @@ void sample_zone_photon(int i, int j, double dnmax, struct of_photon *ph)
 /* Set all initial superphoton attributes */
 
 	int l;
+	int z = 0;
 	double K_tetrad[NDIM], tmpK[NDIM], E, Nln;
 	double nu, th, cth, sth, phi, sphi, cphi, jmax, weight;
 	double Ne, Thetae, Bmag, Ucon[NDIM], Bcon[NDIM], bhat[NDIM];
 	static double Econ[NDIM][NDIM], Ecov[NDIM][NDIM];
-
+	#if(HAMR)
+	coord_hamr(i, j, z, CENT, ph -> X);
+	#else
 	coord(i, j, ph->X);
-
+	#endif
 	Nln = lnu_max - lnu_min;
 
 	get_fluid_zone(i, j, &Ne, &Thetae, &Bmag, Ucon, Bcon);
@@ -435,16 +442,17 @@ void Xtoij(double X[NDIM], int *i, int *j, double del[NDIM])
 /* return boyer-lindquist coordinate of point */
 void bl_coord(double *X, double *r, double *th)
 {
-
+	fprintf(stderr,"X[1] = %le, X[2] = %le, X[3] = %le \n", X[1], X[2], X[3]);
 	*r = exp(X[1]) + R0;
 	*th = M_PI * X[2] + ((1. - hslope) / 2.) * sin(2. * M_PI * X[2]);
 
 	return;
 }
 
+
+
 void coord(int i, int j, double *X)
 {
-
 	/* returns zone-centered values for coordinates */
 	X[0] = startx[0];
 	X[1] = startx[1] + (i + 0.5) * dx[1];
@@ -454,7 +462,6 @@ void coord(int i, int j, double *X)
 	return;
 }
 
-
 void set_units(char *munitstr)
 {
 	double MBH;
@@ -463,7 +470,7 @@ void set_units(char *munitstr)
 	/** could be read in from file here, 
 	    along with M_unit and other parameters **/
 	MBH = 4.e6;
-
+	//MBH= 10;
 	sscanf(munitstr, "%lf", &M_unit);
 
 	/** input parameters appropriate to Sgr A* **/
@@ -495,20 +502,34 @@ void set_units(char *munitstr)
 void init_geometry()
 {
 	int i, j;
+	int z = 0;
 	double X[NDIM];
 
 	for (i = 0; i < N1; i++) {
 		for (j = 0; j < N2; j++) {
 
 			/* zone-centered */
-			coord(i, j, X);
+			#if(HAMR)
+			//fprintf(stderr, "later X[1] = %le, X[2] = %le, X[3] = %le\n",  X[1],   X[2], X[3]);
+			coord_hamr(i, j, z, CENT, X);
+			//fprintf(stderr, "i = %d, j = %d\n", i, j);
+			gcov_func_hamr(X, geom[i][j].gcov);
 
+			//for (int c = 0; c < NDIM; c++)for (int n = 0; n < NDIM; n++) fprintf(stderr, "Gcov[%d][%d][%d] = %le\n", i, j, n, geom[i][j].gcov[n][c]);
+			//fprintf(stderr, "later X[1] = %le, X[2] = %le, X[3] = %le\n",  X[1],   X[2],  X[3]);
+			#else
+			coord(i, j, X);
 			gcov_func(X, geom[i][j].gcov);
+			#endif
+
 
 			geom[i][j].g = gdet_func(geom[i][j].gcov);
 
+			#if(HAMR)
+			gcon_func_hamr(geom[i][j].gcov, geom[i][j].gcon);
+			#else
 			gcon_func(X, geom[i][j].gcon);
-
+			#endif
 		}
 	}
 

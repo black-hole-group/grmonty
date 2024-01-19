@@ -125,10 +125,12 @@ double jnu_integrand(double th, void *params)
 #undef CST
 
 /* Tables */
-double F[N_ESAMP + 1], K2[N_ESAMP + 1];
+//double F[N_ESAMP + 1], K2[N_ESAMP + 1]; //PEDRO EDIT -> F is being declared twice here and in grmonty.c, so I've just commented this and added line below \/
+extern double F[N_ESAMP + 1];
+double K2[N_ESAMP + 1];
 double lK_min, dlK;
-double lT_min, dlT;
-
+double lT_min;
+extern double dlT; //PEDRO EDIT -> F is being declared twice here and in hotcross.c, so I've just defined this as an extern
 #define EPSABS 0.
 #define EPSREL 1.e-6
 #define KMIN (0.002)
@@ -207,12 +209,16 @@ double F_eval(double Thetae, double Bmag, double nu)
 	K = KFAC * nu / (Bmag * Thetae * Thetae);
 
 	if (K > KMAX) {
+		//fprintf(stderr, "K > Kmax\n");
 		return 0.;
 	} else if (K < KMIN) {
 		/* use a good approximation */
 		x = pow(K, 0.333333333333333333);
+		//fprintf(stderr, "K < Kmin// x= %le\n", x);
+
 		return (x * (37.67503800178 + 2.240274341836 * x));
 	} else {
+		//fprintf(stderr, "normal print K = %le, nu = %le, Bmag = %le, Thetae = %le\n", K, nu, Bmag, Thetae);
 		return linear_interp_F(K);
 	}
 }
@@ -243,12 +249,25 @@ double linear_interp_F(double K)
 
 	int i;
 	double di, lK;
-
+	//fprintf(stderr, "new\n");
+	//fprintf(stderr, "K = %le\n", K);
 	lK = log(K);
-
 	di = (lK - lK_min) * dlK;
+	//fprintf(stderr, "di primary = %le\n", di);
 	i = (int) di;
+	//fprintf(stderr, "line1\n");
 	di = di - i;
+	// fprintf(stderr, "line2\n");
+	// fprintf(stderr, "lk = %le\n", lK);
+	// fprintf(stderr, "di = %le\n", di);
+	// fprintf(stderr, "K = %le\n", K);
+	// fprintf(stderr, "i = %d\n", i);
+	// fprintf(stderr, "F[i] = %le\n", F[i]);
+	// fprintf(stderr, "F[i+1] = %le\n", F[i + 1]);
+
+
+	// fprintf(stderr, "lk = %le, di = %le, K = %le, i = %d, F[i] = %le, F[i+1] = %le\n", lK, di, K, i, F[i], F[i + 1]);
+	// fprintf(stderr, "return = %le\n", exp((1. - di) * F[i] + di * F[i + 1]));
 
 	return exp((1. - di) * F[i] + di * F[i + 1]);
 }

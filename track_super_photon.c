@@ -50,6 +50,8 @@
 */
 
 #include "decs.h"
+#include "harm_model.h"
+
 
 #define MAXNSTEP	1280000
 
@@ -89,7 +91,12 @@ void track_super_photon(struct of_photon *ph)
 	dtauK = 2. * M_PI * L_unit / (ME * CL * CL / HBAR);
 
 	/* Initialize opacities */
+	#if(HAMR)
+	gcov_func_hamr(ph->X, Gcov);
+	#else
 	gcov_func(ph->X, Gcov);
+	#endif
+
 	get_fluid_params(ph->X, Gcov, &Ne, &Thetae, &B, Ucon, Ucov, Bcon,
 			 Bcov);
 
@@ -103,7 +110,6 @@ void track_super_photon(struct of_photon *ph)
 	init_dKdlam(ph->X, ph->K, ph->dKdlam);
 
 	while (!stop_criterion(ph)) {
-
 		/* Save initial position/wave vector */
 		Xi[0] = ph->X[0];
 		Xi[1] = ph->X[1];
@@ -121,14 +127,22 @@ void track_super_photon(struct of_photon *ph)
 
 		/* evaluate stepsize */
 		dl = stepsize(ph->X, ph->K);
-
+		if(dl > 10){
+			fprintf(stderr, "Dl is higher than 10! things are starting to go bananas!\n");
+		}
 		/* step the geodesic */
 		push_photon(ph->X, ph->K, ph->dKdlam, dl, &(ph->E0s), 0);
+
+
 		if (stop_criterion(ph))
 			break;
 
 		/* allow photon to interact with matter, */
+		#if(HAMR)
+		gcov_func_hamr(ph->X, Gcov);
+		#else
 		gcov_func(ph->X, Gcov);
+		#endif
 		get_fluid_params(ph->X, Gcov, &Ne, &Thetae, &B, Ucon, Ucov,
 				 Bcon, Bcov);
 		if (alpha_absi > 0. || alpha_scatti > 0. || Ne > 0.) {
@@ -236,7 +250,11 @@ void track_super_photon(struct of_photon *ph)
 				ph->E0s = E0;
 
 				/* Get plasma parameters at new position */
+				#if(HAMR)
+				gcov_func_hamr(ph->X, Gcov);
+				#else
 				gcov_func(ph->X, Gcov);
+				#endif
 				get_fluid_params(ph->X, Gcov, &Ne, &Thetae,
 						 &B, Ucon, Ucov, Bcon,
 						 Bcov);

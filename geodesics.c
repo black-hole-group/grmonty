@@ -41,6 +41,8 @@
 
 
 #include "decs.h"
+#include "harm_model.h"
+
 /*
 
 this is the main photon orbit integrator 
@@ -77,6 +79,7 @@ void push_photon(double X[NDIM], double Kcon[NDIM], double dKcon[NDIM],
 		X[i] += Kcon[i] * dl;
 	}
 
+
 	get_connection(X, lconn);
 
 	/* We're in a coordinate basis so take advantage of symmetry in the connection */
@@ -112,7 +115,11 @@ void push_photon(double X[NDIM], double Kcon[NDIM], double dKcon[NDIM],
 
 	FAST_CPY(K, Kcon);
 
+	#if(HAMR)
+	gcov_func_hamr(X, Gcov);
+	#else
 	gcov_func(X, Gcov);
+	#endif
 	E1 = -(Kcon[0] * Gcov[0][0] + Kcon[1] * Gcov[0][1] +
 	       Kcon[2] * Gcov[0][2] + Kcon[3] * Gcov[0][3]);
 	errE = fabs((E1 - (*E0)) / (*E0));

@@ -43,16 +43,16 @@
 # requires an openmp-enabled version of gcc
 #
 CC = gcc
-CFLAGS = -Wall -O2 -fopenmp
+CFLAGS = -g -Og -Wall -O0 -fopenmp
 LDFLAGS = -lm -lgsl -lgslcblas -fopenmp
 
 SRCS = grmonty.c compton.c init_geometry.c tetrads.c geodesics.c \
 radiation.c jnu_mixed.c hotcross.c track_super_photon.c \
-scatter_super_photon.c harm_model.c harm_utils.c init_harm_data.c
+scatter_super_photon.c harm_model.c harm_utils.c hamr_model.c init_harm_data.c init_hamr_data.c 
  
 OBJS = grmonty.o compton.o init_geometry.o tetrads.o geodesics.o \
 radiation.o jnu_mixed.o hotcross.o track_super_photon.o \
-scatter_super_photon.o harm_model.o harm_utils.o init_harm_data.o
+scatter_super_photon.o harm_model.o harm_utils.o hamr_model.o init_harm_data.o init_hamr_data.o
 
 INCS = decs.h constants.h harm_model.h
 

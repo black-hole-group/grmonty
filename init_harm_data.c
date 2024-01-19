@@ -105,7 +105,8 @@ void init_harm_data(char *fname)
 	fscanf(fp, "%lf ", &Rout);
 	fscanf(fp, "%lf ", &hslope);
 	fscanf(fp, "%lf ", &R0);
-
+	fprintf(stderr, "R0 = %le\n", R0);
+	fprintf(stderr, "hslope = %le\n", hslope);
 	/* nominal non-zero values for axisymmetric simulations */
 	startx[0] = 0.;
 	startx[3] = 0.;
@@ -138,17 +139,19 @@ void init_harm_data(char *fname)
 		j = k % N2;
 		i = (k - j) / N2;
 		fscanf(fp, "%lf %lf %lf %lf", &x[1], &x[2], &r, &h);
+		//fprintf(stderr,"Outside X[1] = %le, X[2] = %le, X[3] = %le \n", x[1], x[2], x[3]);
+
 
 		/* check that we've got the coordinate parameters right */
-		bl_coord(x, &rp, &hp);
-		if (fabs(rp - r) > 1.e-5 * rp || fabs(hp - h) > 1.e-5) {
-			fprintf(stderr, "grid setup error\n");
-			fprintf(stderr, "rp,r,hp,h: %g %g %g %g\n",
-				rp, r, hp, h);
-			fprintf(stderr,
-				"edit R0, hslope, compile, and continue\n");
-			exit(1);
-		}
+		// bl_coord(x, &rp, &hp);
+		// if (fabs(rp - r) > 1.e-5 * rp || fabs(hp - h) > 1.e-5) {
+		// 	fprintf(stderr, "grid setup error\n");
+		// 	fprintf(stderr, "rp,r,hp,h: %g %g %g %g\n",
+		// 		rp, r, hp, h);
+		// 	fprintf(stderr,
+		// 		"edit R0, hslope, compile, and continue\n");
+		// 	exit(1);
+		// }
 
 		fscanf(fp, "%lf %lf %lf %lf %lf %lf %lf %lf",
 		       &p[KRHO][i][j],

@@ -47,6 +47,7 @@
 #define global extern
 #endif
 
+
 global double ****econ;
 global double ****ecov;
 global double ***bcon;
@@ -76,4 +77,26 @@ void Xtoij(double X[NDIM], int *i, int *j, double del[NDIM]);
 void coord(int i, int j, double *X);
 void get_fluid_zone(int i, int j, double *Ne, double *Thetae, double *B,
 		    double Ucon[NDIM], double Bcon[NDIM]);
+
+
+
+#define REF_2 (1)
+#define TILT_ANGLE (0.0)
+#define LEFT (0)
+#define RIGHT (1)
+#define FACE1	(0)	
+#define FACE2	(1)
+#define CORN	(2)
+#define CENT	(3)
+#define FACE3	(4)
+
+void bl_coord_hamr(double *X, double *r, double *th, double *phi);
+void vofx_matthewcoords(double *X, double *V);
+void dxdxp_func(double *X, double dxdxp[][NDIM]);
+void LU_substitution( double A[][NDIM], double B[], int permute[] );
+int LU_decompose( double A[][NDIM], int permute[] );
+int invert_matrix( double Am[][NDIM], double Aminv[][NDIM]);  
+void gcon_func_hamr(double gcov[][NDIM], double gcon[][NDIM]);
+void gcov_func_hamr(double *X, double gcovp[][NDIM]);
+void coord_hamr(int i, int j, int z, int loc, double * X);
 
