@@ -16,6 +16,16 @@ H-AMR deals with the $x_2$ dimension differently than HARM's usual correlation f
 
 * Connection components $(\Gamma^\alpha_{\beta \gamma})$ are calculated in function ```conn_func```
 * Gcov $(g_{\mu\nu})$ and Gcon $(g^{\mu \nu})$ components are calculated in functions ```gcov_func_hamr``` and ```gcon_func_hamr```
+* $x_1, x_2$ and $x_3$ coordinates based on the cell indexes in function ```coord_hamr```
+* All the declarations are in harm_model.h file.
+
+## Run the code
+To run the code using H-AMR mode, you need to activate the switch within decs.h:72:
+
+   ``` #define HAMR (0)```
+   
+change the number 0 to 1.
+Then you need to set the number of threads for the calculation using the right command listed below:
 
 set number of threads for `csh` and 8 threads:
 
@@ -27,7 +37,7 @@ if using `bash`:
 
 run the code on the supplied harm output file:
 
-    ./grmonty 5000000 dump019 4.e19 
+    ./grmonty 5000000 HAMR_GRMONTY_DUMP323.bin 4.e19 
 
 
 This will output the spectrum to `grmonty.spec`  which should be identical to `grmonty_spec_verify`.
@@ -44,36 +54,6 @@ plot(s.lognu, s.ll)
 ```
 
 Old-fashioned way: Use the [SM](http://www.astro.princeton.edu/~rhl/sm/) script `plspec.m` to plot up broad-band spectral energy distribution.
-
-# Calculate spectra from other sources
-
-Replace `harm_model.c` with your own source model.  Begin by modifying `harm_model.c`. You must supply
-
-```
-init_model 
-make_super_photon
-bias_func
-get_fluid_params
-report_spectrum
-stop_criterion
-record_criterion
-
-gcon_func 
-gcov_func 
-get_connection
-```
-
-in the model file.
-
-# TODO
-
-- [ ] make it work with [HARMPI](https://github.com/atchekho/harmpi)
-- [ ] GPU support: OpenCL
-- [ ] parallelize with MPI
-- [ ] add bremsstrahlung
-- [ ] nonthermal electron distribution
-- [ ] dynamic metrics as input
-- [x] add LICENSE
 
 # References
 
