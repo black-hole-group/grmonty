@@ -5,15 +5,17 @@ Based on [Dolence et al. 2009 ApJ](http://adsabs.harvard.edu/abs/2009ApJS..184..
 
 GRMONTY is parallelized using [OpenMP](https://en.wikipedia.org/wiki/OpenMP). This version is configured to use input from [`harm2d`](http://rainman.astro.illinois.edu/codelib/codes/ham2d/src/).
 
-# quick start
+# H-AMR branch
+In this branch, we tried to make the code work with data from the state-of-the-art code H-AMR ([Liska et al. 2019](https://arxiv.org/abs/1912.10192)).
 
-unpack the tarball:
+## H-AMR data
+We do not use H-AMR data directly, we use a notebook to convert H-AMR's dump files into a binary file with the components in the right order for grmonty to handle. In this example, I've but the file HAMR_GRMONTY_DUMP323.bin as an example. This is a 2D simulation with dimensions $(256 \times 256)$ in $r - \theta$ dimensions.
 
-    tar -xzvf grmonty.tgz
+## Changes in the code
+H-AMR deals with the $x_2$ dimension differently than HARM's usual correlation formula: $\theta = \pi x_2 + \frac{1}{2}(1-h)sin(2\pi x_2)$, which maps $0 \leq \theta \leq \pi$ to $0 \leq x_2 \leq 1$, because of this, we use a different function to convert $(x_1, x_2, x_3)$ to $(r, \theta, \phi)$. We also used different functions to calculate:
 
-make (requires openmp enabled gcc):
-
-    make
+* Connection components $(\Gamma^\alpha_{\beta \gamma})$ are calculated in function ```conn_func```
+* Gcov $(g_{\mu\nu})$ and Gcon $(g^{\mu \nu})$ components are calculated in functions ```gcov_func_hamr``` and ```gcon_func_hamr```
 
 set number of threads for `csh` and 8 threads:
 
@@ -27,13 +29,8 @@ run the code on the supplied harm output file:
 
     ./grmonty 5000000 dump019 4.e19 
 
-Arguments are:
 
-- estimate of photon number (actual number is probabilistic due to scattering)
-- harm dump file for model
-- mass unit (few x 10^19 is appropriate for Sgr A*)
-
-This will output spectrum to `grmonty.spec`  which should be identical to `grmonty_spec_verify`.
+This will output the spectrum to `grmonty.spec`  which should be identical to `grmonty_spec_verify`.
 
 # Plotting
 
