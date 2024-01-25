@@ -139,7 +139,7 @@ void init_harm_data(char *fname)
 		j = k % N2;
 		i = (k - j) / N2;
 		fscanf(fp, "%lf %lf %lf %lf", &x[1], &x[2], &r, &h);
-		//fprintf(stderr,"Outside X[1] = %le, X[2] = %le, X[3] = %le \n", x[1], x[2], x[3]);
+		if(k == 0 || k == N1 * N2 - 1) fprintf(stderr,"X[1] = %le \n",x[1]);
 
 
 		/* check that we've got the coordinate parameters right */

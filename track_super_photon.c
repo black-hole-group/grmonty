@@ -93,6 +93,7 @@ void track_super_photon(struct of_photon *ph)
 	/* Initialize opacities */
 	#if(HAMR)
 	gcov_func_hamr(ph->X, Gcov);
+	//gcov_func(ph->X, Gcov);
 	#else
 	gcov_func(ph->X, Gcov);
 	#endif
@@ -127,12 +128,9 @@ void track_super_photon(struct of_photon *ph)
 
 		/* evaluate stepsize */
 		dl = stepsize(ph->X, ph->K);
-		if(dl > 10){
-			fprintf(stderr, "Dl is higher than 10! things are starting to go bananas!\n");
-		}
+
 		/* step the geodesic */
 		push_photon(ph->X, ph->K, ph->dKdlam, dl, &(ph->E0s), 0);
-
 
 		if (stop_criterion(ph))
 			break;
@@ -140,6 +138,7 @@ void track_super_photon(struct of_photon *ph)
 		/* allow photon to interact with matter, */
 		#if(HAMR)
 		gcov_func_hamr(ph->X, Gcov);
+		//gcov_func(ph->X, Gcov);
 		#else
 		gcov_func(ph->X, Gcov);
 		#endif
@@ -252,6 +251,7 @@ void track_super_photon(struct of_photon *ph)
 				/* Get plasma parameters at new position */
 				#if(HAMR)
 				gcov_func_hamr(ph->X, Gcov);
+				//gcov_func(ph->X, Gcov);
 				#else
 				gcov_func(ph->X, Gcov);
 				#endif

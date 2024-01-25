@@ -410,6 +410,8 @@ void gcov_func_hamr(double *X, double gcovp[][NDIM])
 	gcov[3][1] = gcov[1][3];
 	gcov[3][3] = s2*(rho2 + a*a*s2*(1. + 2.*r / rho2));
 
+	//fprintf(stderr, "gcov[3][3]_hamr = %lf\n", gcov[3][3]);
+	
 	//convert to code coordinates
 	for (i = 0; i<NDIM; i++){
 		for (j = 0; j<NDIM; j++){
@@ -421,15 +423,7 @@ void gcov_func_hamr(double *X, double gcovp[][NDIM])
 			}
 		}
 	}
-	
-	// for (i = 0; i<NDIM; i++){
-	// 	for (j = 0; j<NDIM; j++){
-	// 		fprintf(stderr, "Resultado final: gcovp[%d][%d] = %le \n", i, j, gcovp[i][j]);
-	// 	}
-	// }
-	// fprintf(stderr, "a = %le\n", a);
-	// fprintf(stderr, "r = %le, th = %le, phi = %le \n", r, th, phi);
-	//fprintf(stderr, "X[1] = %le, X[2] = %le, X[3] = %le\n", X[1], X[2], X[3]);
+
 }
 
 /* invert gcov to get gcon */
@@ -443,6 +437,46 @@ void gcon_func_hamr(double gcov[][NDIM], double gcon[][NDIM])
 	// 	}
 	// }
 }
+
+// void gcon_func_hamr(double *X, double gcon[][NDIM])
+// {
+
+// 	int k, l;
+// 	double sth, cth, irho2;
+// 	double r, th, phi;
+// 	double hfac;
+// 	/* required by broken math.h */
+// 	void sincos(double in, double *sth, double *cth);
+
+// 	DLOOP gcon[k][l] = 0.;
+// 	#if(HAMR)
+// 	bl_coord_hamr(X, &r, &th, &phi);
+// 	#else
+// 	bl_coord(X, &r, &th);
+// 	#endif
+
+
+// 	sincos(th, &sth, &cth);
+// 	sth = fabs(sth) + SMALL;
+
+// 	irho2 = 1. / (r * r + a * a * cth * cth);
+
+// 	// transformation for Kerr-Schild -> modified Kerr-Schild 
+// 	//hfac = M_PI + (1. - hslope) * M_PI * cos(2. * M_PI * X[2]);
+// 	hfac = 1;
+
+// 	gcon[0][0] = -1. - 2. * r * irho2;
+// 	gcon[0][1] = 2. * irho2;
+
+// 	gcon[1][0] = gcon[0][1];
+// 	gcon[1][1] = irho2 * (r * (r - 2.) + a * a) / (r * r);
+// 	gcon[1][3] = a * irho2 / r;
+
+// 	gcon[2][2] = irho2 / (hfac * hfac);
+
+// 	gcon[3][1] = gcon[1][3];
+// 	gcon[3][3] = irho2 / (sth * sth);
+// }
 
 
 void coord_hamr(int i, int j, int z, int loc, double * X)
@@ -472,7 +506,8 @@ void coord_hamr(int i, int j, int z, int loc, double * X)
 	else if (loc == CENT) {
 		X[1] = startx[1] + (i + 0.5)*dx[1];
 		X[2] = startx[2] + (j_local + 0.5)*dx[2];
-		X[3] = startx[3] + (z + 0.5)*dx[3];
+		//X[3] = startx[3] + (z + 0.5)*dx[3]; //HAMR3D needs to fix this
+		X[3] = 0;
 	}
 	else {
 		X[1] = startx[1] + i*dx[1];
@@ -498,3 +533,49 @@ void coord_hamr(int i, int j, int z, int loc, double * X)
 	return;
 }
 
+/* Sets the spatial discretization in numerical derivatives : */
+#define EPS 1.e-5
+/* NOTE: parameter hides global variable */
+void conn_func(double *X, double conn[4][4][4])
+{
+	int i,j,k,l ;
+	int a, b;
+	double del[NDIM];
+	double tmp[NDIM][NDIM][NDIM] ;
+	double Xh[NDIM],Xl[NDIM] ;
+	double gh[NDIM][NDIM] ;
+	double gl[NDIM][NDIM] ;
+
+	for(k=0;k<NDIM;k++) {
+		for(l=0;l<NDIM;l++) Xh[l] = X[l] ;
+		for(l=0;l<NDIM;l++) Xl[l] = X[l] ;
+		Xh[k] += EPS ;
+		Xl[k] -= EPS ;
+		gcov_func_hamr(Xh,gh) ;
+		gcov_func_hamr(Xl,gl) ;
+		// gcov_func(Xh,gh) ;
+		// gcov_func(Xl,gl) ;
+		for(i=0;i<NDIM;i++)
+		for(j=0;j<NDIM;j++){ 
+			conn[i][j][k] = (gh[i][j] - gl[i][j])/(Xh[k] - Xl[k]) ;
+		}
+	}
+
+	/* now rearrange to find \Gamma_{ijk} */
+	for(i=0;i<NDIM;i++)
+	for(j=0;j<NDIM;j++)
+	for(k=0;k<NDIM;k++) 
+		tmp[i][j][k] = 0.5*(conn[j][i][k] + conn[k][i][j] - conn[k][j][i]) ;
+	
+	Xtoij(X, &a, &b, del);
+	/* finally, raise index */
+	for(i=0;i<NDIM;i++)
+	for(j=0;j<NDIM;j++)
+	for(k=0;k<NDIM;k++)  {
+		conn[i][j][k] = 0. ;
+		for(l=0;l<NDIM;l++){
+			conn[i][j][k] += geom[a][b].gcon[i][l]*tmp[l][j][k] ;
+		}
+	}
+	/* done! */
+}

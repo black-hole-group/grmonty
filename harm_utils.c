@@ -182,7 +182,7 @@ void init_weight_table(void)
 
 #define BTHSQMIN	(1.e-4)
 #define BTHSQMAX	(1.e8)
-#define	NINT		(20000)
+#define	NINT		(20000) 
 double lb_min, dlb;
 double nint[NINT + 1];
 double dndlnu_max[NINT + 1];
@@ -312,6 +312,7 @@ int get_zone(int *i, int *j, double *dnmax)
 	zj++;
 	if (zj >= N2) {
 		zj = 0;
+		fprintf(stderr, "zi = %d\n", zi);
 		zi++;
 		if (zi >= N1) {
 			in2gen = 1;
@@ -433,7 +434,7 @@ void Xtoij(double X[NDIM], int *i, int *j, double del[NDIM])
 		*j = N2 - 2;
 		del[2] = 1.;
 	} else {
-		del[2] = (X[2] - ((*j + 0.5) * dx[2] + startx[2])) / dx[2];
+		del[2] = (X[2] - ((*j + 0.5) * dx[2] + startx[2])) / dx[2]; //fractional displacement of the center of the grid cel
 	}
 
 	return;
@@ -442,7 +443,7 @@ void Xtoij(double X[NDIM], int *i, int *j, double del[NDIM])
 /* return boyer-lindquist coordinate of point */
 void bl_coord(double *X, double *r, double *th)
 {
-	fprintf(stderr,"X[1] = %le, X[2] = %le, X[3] = %le \n", X[1], X[2], X[3]);
+	//fprintf(stderr,"X[1] = %le, X[2] = %le, X[3] = %le \n", X[1], X[2], X[3]);
 	*r = exp(X[1]) + R0;
 	*th = M_PI * X[2] + ((1. - hslope) / 2.) * sin(2. * M_PI * X[2]);
 
@@ -510,13 +511,11 @@ void init_geometry()
 
 			/* zone-centered */
 			#if(HAMR)
-			//fprintf(stderr, "later X[1] = %le, X[2] = %le, X[3] = %le\n",  X[1],   X[2], X[3]);
 			coord_hamr(i, j, z, CENT, X);
 			//fprintf(stderr, "i = %d, j = %d\n", i, j);
 			gcov_func_hamr(X, geom[i][j].gcov);
-
-			//for (int c = 0; c < NDIM; c++)for (int n = 0; n < NDIM; n++) fprintf(stderr, "Gcov[%d][%d][%d] = %le\n", i, j, n, geom[i][j].gcov[n][c]);
-			//fprintf(stderr, "later X[1] = %le, X[2] = %le, X[3] = %le\n",  X[1],   X[2],  X[3]);
+			//fprintf(stderr, "Espaço\n");
+			//gcov_func(X, geom[i][j].gcov);
 			#else
 			coord(i, j, X);
 			gcov_func(X, geom[i][j].gcov);
@@ -527,6 +526,8 @@ void init_geometry()
 
 			#if(HAMR)
 			gcon_func_hamr(geom[i][j].gcov, geom[i][j].gcon);
+			//gcon_func(X, geom[i][j].gcon);
+			//fprintf(stderr, "gcon = %lf\n", geom[i][j].gcon[3][3]);
 			#else
 			gcon_func(X, geom[i][j].gcon);
 			#endif
@@ -563,7 +564,6 @@ static void *malloc_rank1(int n1, int size)
 		fprintf(stderr, "malloc failure in malloc_rank1\n");
 		exit(123);
 	}
-
 	return A;
 }
 

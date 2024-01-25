@@ -90,6 +90,7 @@ void get_fluid_zone(int i, int j, double *Ne, double *Thetae, double *B,
 #define CENT	(3)
 #define FACE3	(4)
 
+void init_hamr_data(char *fname);
 void bl_coord_hamr(double *X, double *r, double *th, double *phi);
 void vofx_matthewcoords(double *X, double *V);
 void dxdxp_func(double *X, double dxdxp[][NDIM]);
@@ -97,6 +98,7 @@ void LU_substitution( double A[][NDIM], double B[], int permute[] );
 int LU_decompose( double A[][NDIM], int permute[] );
 int invert_matrix( double Am[][NDIM], double Aminv[][NDIM]);  
 void gcon_func_hamr(double gcov[][NDIM], double gcon[][NDIM]);
+//void gcon_func_hamr(double *X, double gcovp[][NDIM]);
 void gcov_func_hamr(double *X, double gcovp[][NDIM]);
+void conn_func(double * X, double conn[4][4][4]);
 void coord_hamr(int i, int j, int z, int loc, double * X);
-

@@ -85,6 +85,7 @@ double gdet_func(double gcov[][NDIM])
 	return (sqrt(fabs(d)));
 }
 
+
 /* invert gcov to get gcon */
 
 /*

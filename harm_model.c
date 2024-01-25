@@ -112,7 +112,7 @@ void make_super_photon(struct of_photon *ph, int *quit_flag)
 	}
 
 	n2gen--;
-
+	//fprintf(stderr, "zone_i = %d, zone_j = %d\n", zone_i, zone_j);
 	if (zone_i == N1)
 		*quit_flag = 1;
 	else
@@ -178,19 +178,19 @@ void get_fluid_zone(int i, int j, double *Ne, double *Thetae, double *B,
 			VdotV += geom[i][j].gcov[l][m] * Vcon[l] * Vcon[m];
 	Vfac = sqrt(-1. / geom[i][j].gcon[0][0] * (1. + fabs(VdotV)));
 	Ucon[0] = -Vfac * geom[i][j].gcon[0][0];
-	for (l = 1; l < NDIM; l++)
+	for (l = 1; l < NDIM; l++){
 		Ucon[l] = Vcon[l] - Vfac * geom[i][j].gcon[0][l];
+	}
 	lower(Ucon, geom[i][j].gcov, Ucov);
-
 	/* Get B and Bcov */
 	UdotBp = 0.;
 	for (l = 1; l < NDIM; l++)
 		UdotBp += Ucov[l] * Bp[l];
 	Bcon[0] = UdotBp;
-	for (l = 1; l < NDIM; l++)
+	for (l = 1; l < NDIM; l++){
 		Bcon[l] = (Bp[l] + Ucon[l] * UdotBp) / Ucon[0];
+	}
 	lower(Bcon, geom[i][j].gcov, Bcov);
-
 	*B = sqrt(Bcon[0] * Bcov[0] + Bcon[1] * Bcov[1] +
 		  Bcon[2] * Bcov[2] + Bcon[3] * Bcov[3]) * B_unit;
 
@@ -208,6 +208,9 @@ void get_fluid_params(double X[NDIM], double gcov[NDIM][NDIM], double *Ne,
 	double Bp[NDIM], Vcon[NDIM], Vfac, VdotV, UdotBp;
 	double gcon[NDIM][NDIM], coeff[4];
 	double interp_scalar(double **var, int i, int j, double del[4]);
+	//fprintf(stderr, "startx[1] = %le, stopx[1] = %le, startx[2] = %le, stopx[2] = %le\n", startx[1], stopx[1], startx[2], stopx[2]);
+
+	//checks if it's within the grid
 	if (X[1] < startx[1] ||
 	    X[1] > stopx[1] || X[2] < startx[2] || X[2] > stopx[2]) {
 
@@ -215,17 +218,22 @@ void get_fluid_params(double X[NDIM], double gcov[NDIM][NDIM], double *Ne,
 
 		return;
 	}
-
+	// Finds out i and j index as well as fraction displacement del from the coordinates X[1], X[2], X[3]
 	Xtoij(X, &i, &j, del);
 
+	//Calculate the coeficient of displacement
 	coeff[0] = (1. - del[1]) * (1. - del[2]);
 	coeff[1] = (1. - del[1]) * del[2];
 	coeff[2] = del[1] * (1. - del[2]);
 	coeff[3] = del[1] * del[2];
 
+	//interpolate based on the displacement
 	rho = interp_scalar(p[KRHO], i, j, coeff);
 	uu = interp_scalar(p[UU], i, j, coeff);
-
+	// if (fabs(rho - p[KRHO][i][j]) > 1e-2){
+	// 	fprintf(stderr, "X[1] = %le, X[2] = %le, i = %d, j = %d\n", X[1], X[2], i, j);
+	// 	fprintf(stderr, "rho = %le, interp_rho = %le\n", p[KRHO][i][j], rho);
+	// }
 	*Ne = rho * Ne_unit;
 	*Thetae = uu / rho * Thetae_unit;
 
@@ -239,9 +247,11 @@ void get_fluid_params(double X[NDIM], double gcov[NDIM][NDIM], double *Ne,
 
 	#if(HAMR)
 	gcon_func_hamr(gcov, gcon);
+	//gcon_func(X, gcon);
 	#else
 	gcon_func(X, gcon);
 	#endif
+	
 	/* Get Ucov */
 	VdotV = 0.;
 	for (i = 1; i < NDIM; i++)
@@ -249,8 +259,9 @@ void get_fluid_params(double X[NDIM], double gcov[NDIM][NDIM], double *Ne,
 			VdotV += gcov[i][j] * Vcon[i] * Vcon[j];
 	Vfac = sqrt(-1. / gcon[0][0] * (1. + fabs(VdotV)));
 	Ucon[0] = -Vfac * gcon[0][0];
-	for (i = 1; i < NDIM; i++)
+	for (i = 1; i < NDIM; i++){
 		Ucon[i] = Vcon[i] - Vfac * gcon[0][i];
+	}
 	lower(Ucon, gcov, Ucov);
 
 	/* Get B and Bcov */
@@ -305,6 +316,10 @@ void gcon_func(double *X, double gcon[][NDIM])
 	// transformation for Kerr-Schild -> modified Kerr-Schild 
 	hfac = M_PI + (1. - hslope) * M_PI * cos(2. * M_PI * X[2]);
 
+	#if(HAMR)
+	hfac = 1.;
+	#endif
+
 	gcon[TT][TT] = -1. - 2. * r * irho2;
 	gcon[TT][1] = 2. * irho2;
 
@@ -344,6 +359,13 @@ void gcov_func(double *X, double gcov[][NDIM])
 	hfac = M_PI + (1. - hslope) * M_PI * cos(2. * M_PI * X[2]);
 	pfac = 1.;
 
+	#if(HAMR)
+	tfac = 1.;
+	rfac = 1.;
+	hfac = 1.;
+	pfac = 1.;
+	#endif
+
 	gcov[TT][TT] = (-1. + 2. * r / rho2) * tfac * tfac;
 	gcov[TT][1] = (2. * r / rho2) * tfac * rfac;
 	gcov[TT][3] = (-2. * a * r * s2 / rho2) * tfac * pfac;
@@ -358,6 +380,9 @@ void gcov_func(double *X, double gcov[][NDIM])
 	gcov[3][1] = gcov[1][3];
 	gcov[3][3] =
 	    s2 * (rho2 + a * a * s2 * (1. + 2. * r / rho2)) * pfac * pfac;
+
+	//fprintf(stderr, "gcov[3][3]_harm = %lf\n", gcov[3][3]);
+
 }
 
 
@@ -501,6 +526,7 @@ void get_connection(double X[4], double lconn[4][4][4])
 	//lconn[2][2][1] = lconn[2][1][2];
 	lconn[2][2][2] =
 	    -a2 * cth * sth * dthdx2 * irho2 + d2thdx22 / dthdx2;
+
 	lconn[2][2][3] = 0.;
 
 	//lconn[2][3][0] = lconn[2][0][3];
@@ -540,26 +566,32 @@ void get_connection(double X[4], double lconn[4][4][4])
 /* stopping criterion for geodesic integrator */
 /* K not referenced intentionally */
 
-#define RMAX	100.
+#define RMAX	10.
 #define ROULETTE	1.e4
 int stop_criterion(struct of_photon *ph)
 {
 	double wmin, X1min, X1max;
 
 	wmin = WEIGHT_MIN;	/* stop if weight is below minimum weight */
+	
 	X1min = log(Rh);	/* this is coordinate-specific; stop
 				   at event horizon */
 	X1max = log(RMAX);	/* this is coordinate and simulation
 				   specific: stop at large distance */
 
+	//fprintf(stderr, "w is: %le, wmin is: %le\n", ph->w, wmin);
+	//fprintf(stderr, "X[1] = %le, X1min = %le\n", ph ->X[1], X1min);
 	if (ph->X[1] < X1min)
+		//fprintf(stderr, "it's getting here 1\n");
 		return 1;
 
 	if (ph->X[1] > X1max) {
 		if (ph->w < wmin) {
 			if (monty_rand() <= 1. / ROULETTE) {
+				//fprintf(stderr, "it's getting here 2\n");
 				ph->w *= ROULETTE;
 			} else
+				//fprintf(stderr, "it's getting here 3\n");
 				ph->w = 0.;
 		}
 		return 1;
@@ -568,8 +600,10 @@ int stop_criterion(struct of_photon *ph)
 	if (ph->w < wmin) {
 		if (monty_rand() <= 1. / ROULETTE) {
 			ph->w *= ROULETTE;
+			//fprintf(stderr, "it's getting here 4\n");
 		} else {
 			ph->w = 0.;
+			//fprintf(stderr, "it's getting here 5\n");
 			return 1;
 		}
 	}
@@ -584,7 +618,7 @@ int record_criterion(struct of_photon *ph)
 	const double X1max = log(RMAX);
 	/* this is coordinate and simulation
 	   specific: stop at large distance */
-
+	//fprintf(stderr, "X[1] coord = %le, X1max = %le\n", ph->X[1], X1max);
 	if (ph->X[1] > X1max)
 		return (1);
 
@@ -596,7 +630,7 @@ int record_criterion(struct of_photon *ph)
 
 /* EPS really ought to be related to the number of
    zones in the simulation. */
-#define EPS	0.04
+#define EPS	1e-5
 //#define EPS   0.01
 
 
@@ -614,12 +648,11 @@ double stepsize(double X[NDIM], double K[NDIM])
 	idlx3 = 1. / (fabs(dlx3) + SMALL);
 
 	dl = 1. / (idlx1 + idlx2 + idlx3);
-	if (dl > 3e-8){
-		fprintf(stderr, "wait!\n");
-	}
-	if (dl > 1){
-		fprintf(stderr, "wait!\n");
-	}
+	//fprintf(stderr, "dlx1 = %le, dlx2 = %le, dlx3 = %le, idlx1 = %le, idlx2 = %le, idlx3 = %le, dl = %le\n", dlx1, dlx2, dlx3, idlx1, idlx2, idlx3, dl);
+	// for (int i = 0; i < NDIM; i++){
+	// 	fprintf(stderr, "X[%d] = %le, k[%d] = %le\n", i, X[i], i, K[i]);
+	// }
+	//exit(1);
 
 	return (dl);
 }

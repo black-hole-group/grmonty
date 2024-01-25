@@ -67,7 +67,7 @@
 #define THETAE_MIN	0.3
 #define TP_OVER_TE	(3.)
 
-#define WEIGHT_MIN	(1.e31)
+#define WEIGHT_MIN	(1e31)
 
 #define HAMR (1)
 
@@ -288,8 +288,6 @@ int record_criterion(struct of_photon *ph);
 /* coordinate related */
 void get_connection(double *X, double lconn[][NDIM][NDIM]);
 void gcov_func(double *X, double gcov[][NDIM]);
-
-
 void gcon_func(double *X, double gcon[][NDIM]);
 
 
