@@ -73,25 +73,24 @@ void push_photon(double X[NDIM], double Kcon[NDIM], double dKcon[NDIM],
 
 	dl_2 = 0.5 * dl;
 	/* Step the position and estimate new wave vector */
-	// if(omp_get_thread_num() == 0){
-	// 	fprintf(stderr, "X1 before = %le, K1 before = %le\n", X[1], K[1]);
-	// }
-
+	// fprintf(stderr, "iteration = %d\n", n);
+	// fprintf(stderr, "Inside Push Photon before X[0] = %lf, X[1] = %lf, X[2] = %lf, X[3] = %lf\n", X[0], X[1], X[2], X[3]);
+	// fprintf(stderr, "Inside Push Photon before k[0] = %lf, k[1] = %lf, k[2] = %lf, k[3] = %lf\n", K[0], K[1], K[2], K[3]);
+	// fprintf(stderr, "dl = %lf, dKcon[0] = %lf, dKcon[1] = %lf, dKcon[2] = %lf, dKcon[3] = %lf\n", dl, dKcon[0], dKcon[1], dKcon[2], dKcon[3]);
 	for (i = 0; i < NDIM; i++) {
 		dK = dKcon[i] * dl_2;
 		Kcon[i] += dK;
 		K[i] = Kcon[i] + dK;
 		X[i] += Kcon[i] * dl;
 	}
+	// fprintf(stderr, "Inside Push Photon after X[0] = %lf, X[1] = %lf, X[2] = %lf, X[3] = %lf\n", X[0], X[1], X[2], X[3]);
+	// fprintf(stderr, "Inside Push Photon after k[0] = %lf, k[1] = %lf, k[2] = %lf, k[3] = %lf\n", K[0], K[1], K[2], K[3]);
 
 	// if(omp_get_thread_num() == 0){
 	// 	fprintf(stderr, "X1 after = %le, K1 after = %le\n", X[1], K[1]);
 	// }
-	#if(HAMR)
-	conn_func(X, lconn);
-	#else
 	get_connection(X, lconn);
-	#endif
+
 	/* We're in a coordinate basis so take advantage of symmetry in the connection */
 	iter = 0;
 	do {
@@ -164,11 +163,8 @@ void push_photon4(double X[], double K[], double dK[], double dl)
 	for (k = 0; k < NDIM; k++)
 		f1x[k] = K[k];
 
-	#if(HAMR)
-	conn_func(X, lconn);
-	#else
 	get_connection(X, lconn);
-	#endif
+
 
 	for (k = 0; k < NDIM; k++) {
 		f1k[k] =
@@ -194,11 +190,7 @@ void push_photon4(double X[], double K[], double dK[], double dl)
 		Xt[k] = X[k] + dl_2 * f1x[k];
 	}
 
-	#if(HAMR)
-	conn_func(Xt, lconn);
-	#else
 	get_connection(Xt, lconn);
-	#endif
 
 	for (k = 0; k < NDIM; k++) {
 		f2k[k] =
@@ -225,11 +217,8 @@ void push_photon4(double X[], double K[], double dK[], double dl)
 		Xt[k] = X[k] + dl_2 * f2x[k];
 	}
 
-	#if(HAMR)
-	conn_func(Xt, lconn);
-	#else
 	get_connection(Xt, lconn);
-	#endif
+
 	for (k = 0; k < NDIM; k++) {
 		f3k[k] =
 		    -2. * (Kt[0] *
@@ -255,11 +244,7 @@ void push_photon4(double X[], double K[], double dK[], double dl)
 		Xt[k] = X[k] + dl * f3x[k];
 	}
 
-	#if(HAMR)
-	conn_func(Xt, lconn);
-	#else
 	get_connection(Xt, lconn);
-	#endif
 
 	for (k = 0; k < NDIM; k++) {
 		f4k[k] =
@@ -301,12 +286,14 @@ void init_dKdlam(double X[], double Kcon[], double dK[])
 	int k;
 	double lconn[NDIM][NDIM][NDIM];
 
-	#if(HAMR)
-	conn_func(X, lconn);
-	#else
 	get_connection(X, lconn);
-	#endif
+	//fprintf(stderr, "Inside INIT_DKDLAM after X[0] = %lf, X[1] = %lf, X[2] = %lf, X[3] = %lf\n", X[0], X[1], X[2], X[3]);
 
+	// for(int i = 0; i< 4; i++)
+	// for(int j = 0; j < 4; j++)
+	// for(int z = 0; z< 4; z++){
+	// 	fprintf(stderr, "We are inside init_dKdlam function: lconn[%d][%d][%d] = %le\n", i, j, z, lconn[i][j][z]);
+	// }
 	for (k = 0; k < 4; k++) {
 
 		dK[k] =

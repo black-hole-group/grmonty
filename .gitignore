@@ -1,0 +1,5 @@
+
+callgrind.out*
+*.o
+*.txt
+*.o

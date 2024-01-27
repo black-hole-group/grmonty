@@ -100,5 +100,4 @@ int invert_matrix( double Am[][NDIM], double Aminv[][NDIM]);
 void gcon_func_hamr(double gcov[][NDIM], double gcon[][NDIM]);
 //void gcon_func_hamr(double *X, double gcovp[][NDIM]);
 void gcov_func_hamr(double *X, double gcovp[][NDIM]);
-void conn_func(double * X, double conn[4][4][4]);
 void coord_hamr(int i, int j, int z, int loc, double * X);

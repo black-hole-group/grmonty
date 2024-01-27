@@ -109,7 +109,8 @@ void track_super_photon(struct of_photon *ph)
 
 	/* Initialize dK/dlam */
 	init_dKdlam(ph->X, ph->K, ph->dKdlam);
-
+	// fprintf(stderr, "Outside everything dKcon[0] = %lf, dKcon[1] = %lf, dKcon[2] = %lf, dKcon[3] = %lf\n", ph->dKdlam[0], ph->dKdlam[1], ph->dKdlam[2], ph->dKdlam[3]);
+	// exit(1);
 	while (!stop_criterion(ph)) {
 		/* Save initial position/wave vector */
 		Xi[0] = ph->X[0];
@@ -130,6 +131,9 @@ void track_super_photon(struct of_photon *ph)
 		dl = stepsize(ph->X, ph->K);
 
 		/* step the geodesic */
+		// fprintf(stderr, "before pushing photon: X[0] = %lf, X[1] = %lf, X[2] = %lf, X[3] = %lf\n", ph->X[0], ph->X[1], ph->X[2], ph->X[3]);
+		// fprintf(stderr, "Outside Push Photon function dl = %lf, dKcon[0] = %lf, dKcon[1] = %lf, dKcon[2] = %lf, dKcon[3] = %lf\n", dl, ph->dKdlam[0], ph->dKdlam[1], ph->dKdlam[2], ph->dKdlam[3]);
+
 		push_photon(ph->X, ph->K, ph->dKdlam, dl, &(ph->E0s), 0);
 
 		if (stop_criterion(ph))
@@ -137,7 +141,16 @@ void track_super_photon(struct of_photon *ph)
 
 		/* allow photon to interact with matter, */
 		#if(HAMR)
+		// for(int i = 0; i < NDIM; i++)
+		// for(int j = 0; j < NDIM; j++){
+		// fprintf(stderr, "Gcov[%d][%d] = %lf\n", i, j, Gcov[i][j]);
+		// }
 		gcov_func_hamr(ph->X, Gcov);
+		// fprintf(stderr, "X[0] = %lf, X[1] = %lf, X[2] = %lf, X[3] = %lf\n", ph->X[0], ph->X[1], ph->X[2], ph->X[3]);
+		// for(int i = 0; i < NDIM; i++)
+		// for(int j = 0; j < NDIM; j++){
+		// fprintf(stderr, "Gcov[%d][%d] = %lf\n", i, j, Gcov[i][j]);
+		// }
 		//gcov_func(ph->X, Gcov);
 		#else
 		gcov_func(ph->X, Gcov);

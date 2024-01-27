@@ -48,7 +48,7 @@
 
 #include "decs.h"
 #include "harm_model.h"
-
+#include <math.h>
 
 
 /*******************Functions used to calculate the grid*******************/
@@ -380,12 +380,12 @@ void gcov_func_hamr(double *X, double gcovp[][NDIM])
 {
 	int i, j, k, l;
 	double sth, cth, s2, rho2;
+	double del[NDIM];
 	double r, th, phi;
 	double a = 0.9375;
-	double gcov[NDIM][NDIM];
 	double dxdxp[NDIM][NDIM];
 	double tilt = TILT_ANGLE / 180.*M_PI;
-	for(j=0;j<NDIM;j++) for(k=0;k<NDIM;k++) gcov[j][k] = 0.;
+	for(j=0;j<NDIM;j++) for(k=0;k<NDIM;k++) gcovp[j][k] = 0.;
 	bl_coord_hamr(X, &r, &th, &phi);
 
 	cth = cos(th);
@@ -395,34 +395,35 @@ void gcov_func_hamr(double *X, double gcovp[][NDIM])
 	rho2 = r*r + a*a*cth*cth;
 
 	//compute Jacobian x1,x2,x3 -> r,th,phi (dr/dx1)
-	dxdxp_func(X, dxdxp);
-	gcov[0][0] = (-1. + 2.*r / rho2);
-	gcov[0][1] = (2.*r / rho2);
-	gcov[0][3] = (-2.*a*r*s2 / rho2);
+	//dxdxp_func(X, dxdxp);
+	gcovp[0][0] = (-1. + 2.*r / rho2);
+	gcovp[0][1] = (2.*r / rho2)*r;
+	gcovp[0][3] = (-2.*a*r*s2 / rho2);
 
-	gcov[1][0] = gcov[0][1];
-	gcov[1][1] = (1. + 2.*r / rho2);
-	gcov[1][3] = (-a*s2*(1. + 2.*r / rho2));
+	gcovp[1][0] = gcovp[0][1];
+	gcovp[1][1] = (1. + 2.*r / rho2)*r*r;
+	gcovp[1][3] = (-a*s2*(1. + 2.*r / rho2)) * r;
 
-	gcov[2][2] = rho2;
+	gcovp[2][2] = rho2 * (M_PI/2) * (M_PI/2);
 
-	gcov[3][0] = gcov[0][3];
-	gcov[3][1] = gcov[1][3];
-	gcov[3][3] = s2*(rho2 + a*a*s2*(1. + 2.*r / rho2));
-
-	//fprintf(stderr, "gcov[3][3]_hamr = %lf\n", gcov[3][3]);
+	gcovp[3][0] = gcovp[0][3];
+	gcovp[3][1] = gcovp[1][3];
+	gcovp[3][3] = s2*(rho2 + a*a*s2*(1. + 2.*r / rho2));
+	// Xtoij(X,&i,&j, del);
+	// fprintf(stderr, "gcov[3][3]_hamr = %lf\n", gcovp[2][2]);
+	// fprintf(stderr, "i = %d,j = %d\n", i,j);
 	
 	//convert to code coordinates
-	for (i = 0; i<NDIM; i++){
-		for (j = 0; j<NDIM; j++){
-			gcovp[i][j] = 0.;
-			for (k = 0; k<NDIM; k++) {
-				for (l = 0; l<NDIM; l++){
-					gcovp[i][j] += gcov[k][l] * dxdxp[k][i] * dxdxp[l][j];
-				}
-			}
-		}
-	}
+	// for (i = 0; i<NDIM; i++){
+	// 	for (j = 0; j<NDIM; j++){
+	// 		gcovp[i][j] = 0.;
+	// 		for (k = 0; k<NDIM; k++) {
+	// 			for (l = 0; l<NDIM; l++){
+	// 				gcovp[i][j] += gcov[k][l] * dxdxp[k][i] * dxdxp[l][j];
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 }
 
@@ -533,49 +534,4 @@ void coord_hamr(int i, int j, int z, int loc, double * X)
 	return;
 }
 
-/* Sets the spatial discretization in numerical derivatives : */
-#define EPS 1.e-5
-/* NOTE: parameter hides global variable */
-void conn_func(double *X, double conn[4][4][4])
-{
-	int i,j,k,l ;
-	int a, b;
-	double del[NDIM];
-	double tmp[NDIM][NDIM][NDIM] ;
-	double Xh[NDIM],Xl[NDIM] ;
-	double gh[NDIM][NDIM] ;
-	double gl[NDIM][NDIM] ;
 
-	for(k=0;k<NDIM;k++) {
-		for(l=0;l<NDIM;l++) Xh[l] = X[l] ;
-		for(l=0;l<NDIM;l++) Xl[l] = X[l] ;
-		Xh[k] += EPS ;
-		Xl[k] -= EPS ;
-		gcov_func_hamr(Xh,gh) ;
-		gcov_func_hamr(Xl,gl) ;
-		// gcov_func(Xh,gh) ;
-		// gcov_func(Xl,gl) ;
-		for(i=0;i<NDIM;i++)
-		for(j=0;j<NDIM;j++){ 
-			conn[i][j][k] = (gh[i][j] - gl[i][j])/(Xh[k] - Xl[k]) ;
-		}
-	}
-
-	/* now rearrange to find \Gamma_{ijk} */
-	for(i=0;i<NDIM;i++)
-	for(j=0;j<NDIM;j++)
-	for(k=0;k<NDIM;k++) 
-		tmp[i][j][k] = 0.5*(conn[j][i][k] + conn[k][i][j] - conn[k][j][i]) ;
-	
-	Xtoij(X, &a, &b, del);
-	/* finally, raise index */
-	for(i=0;i<NDIM;i++)
-	for(j=0;j<NDIM;j++)
-	for(k=0;k<NDIM;k++)  {
-		conn[i][j][k] = 0. ;
-		for(l=0;l<NDIM;l++){
-			conn[i][j][k] += geom[a][b].gcon[i][l]*tmp[l][j][k] ;
-		}
-	}
-	/* done! */
-}

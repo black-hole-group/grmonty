@@ -424,10 +424,17 @@ void get_connection(double X[4], double lconn[4][4][4])
 	sincos(2. * M_PI * X[2], &sx, &cx);
 
 	/* HARM-2D MKS */
+	#if(HAMR)
+	double x2_mod;
+	x2_mod = (X[2] + 1.)/2.;
+	th = M_PI * x2_mod;
+    dthdx2 = M_PI * (1./2.);
+    d2thdx22 = 0;
+	#else
 	th = M_PI * X[2] + 0.5 * (1 - hslope) * sx;
 	dthdx2 = M_PI * (1. + (1 - hslope) * cx);
 	d2thdx22 = -2. * M_PI * M_PI * (1 - hslope) * sx;
-
+	#endif
 	dthdx22 = dthdx2 * dthdx2;
 
 	sincos(th, &sth, &cth);
@@ -446,7 +453,7 @@ void get_connection(double X[4], double lconn[4][4][4])
 	a4 = a3 * a;
 	a4cth4 = a4 * cth4;
 
-	rho2 = r2 + a2cth2;
+	rho2 = r2 + a2cth2;                
 	rho22 = rho2 * rho2;
 	rho23 = rho22 * rho2;
 	irho2 = 1. / rho2;
@@ -462,6 +469,12 @@ void get_connection(double X[4], double lconn[4][4][4])
 	lconn[0][0][0] = 2. * r1 * fac1_rho23;
 	lconn[0][0][1] = r1 * (2. * r1 + rho2) * fac1_rho23;
 	lconn[0][0][2] = -a2 * r1 * s2th * dthdx2 * irho22;
+	// fprintf(stderr, "a2 = %le\n", a2);
+	// fprintf(stderr, "r1 = %le\n", r1);
+	// fprintf(stderr, "irho22 = %le\n", irho22);
+	// fprintf(stderr, "s2th = %le\n", s2th);
+	// fprintf(stderr, "dthdx2 = %le\n", dthdx2);
+
 	lconn[0][0][3] = -2. * a * r1sth2 * fac1_rho23;
 
 	//lconn[0][1][0] = lconn[0][0][1];
@@ -474,7 +487,6 @@ void get_connection(double X[4], double lconn[4][4][4])
 	//lconn[0][2][1] = lconn[0][1][2];
 	lconn[0][2][2] = -2. * r2 * dthdx22 * irho2;
 	lconn[0][2][3] = a3 * r1sth2 * s2th * dthdx2 * irho22;
-
 	//lconn[0][3][0] = lconn[0][0][3];
 	//lconn[0][3][1] = lconn[0][1][3];
 	//lconn[0][3][2] = lconn[0][2][3];
@@ -630,17 +642,23 @@ int record_criterion(struct of_photon *ph)
 
 /* EPS really ought to be related to the number of
    zones in the simulation. */
-#define EPS	1e-5
-//#define EPS   0.01
+//#define EPS	1e-5
+#define EPS   0.04
 
 
 double stepsize(double X[NDIM], double K[NDIM])
 {
 	double dl, dlx1, dlx2, dlx3;
 	double idlx1, idlx2, idlx3;
-
+	#if(HAMR)
+		double x2_normal, stopx2_normal;
+		x2_normal = (1 + X[2])/2;
+		stopx2_normal = 1.; 
+		dlx2 = EPS * GSL_MIN(x2_normal, stopx2_normal - x2_normal) / (fabs(K[2]) + SMALL);
+	#else
+		dlx2 = EPS * GSL_MIN(X[2], stopx[2] - X[2]) / (fabs(K[2]) + SMALL);
+	#endif
 	dlx1 = EPS * X[1] / (fabs(K[1]) + SMALL);
-	dlx2 = EPS * GSL_MIN(X[2], stopx[2] - X[2]) / (fabs(K[2]) + SMALL);
 	dlx3 = EPS / (fabs(K[3]) + SMALL);
 
 	idlx1 = 1. / (fabs(dlx1) + SMALL);
