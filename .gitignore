@@ -2,4 +2,5 @@
 callgrind.out*
 *.o
 *.txt
-*.o
+HAMR_GRMONTY_DUMP300_3D.bin
+HAMR_GRMONTY_DUMP110_thin.bin

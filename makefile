@@ -1,66 +1,44 @@
+# Source directory
+SRC_DIR = src
 
+# Build directory
+BUILD_DIR = build
 
-#/***********************************************************************************
-#    Copyright 2013 Joshua C. Dolence, Charles F. Gammie, Monika Mo\'scibrodzka,
-#                   and Po Kin Leung
-#
-#                        GRMONTY  version 1.0   (released February 1, 2013)
-#
-#    This file is part of GRMONTY.  GRMONTY v1.0 is a program that calculates the
-#    emergent spectrum from a model using a Monte Carlo technique.
-#
-#    This version of GRMONTY is configured to use input files from the HARM code
-#    available on the same site.   It assumes that the source is a plasma near a
-#    black hole described by Kerr-Schild coordinates that radiates via thermal 
-#    synchrotron and inverse compton scattering.
-#    
-#    You are morally obligated to cite the following paper in any
-#    scientific literature that results from use of any part of GRMONTY:
-#
-#    Dolence, J.C., Gammie, C.F., Mo\'scibrodzka, M., \& Leung, P.-K. 2009,
-#        Astrophysical Journal Supplement, 184, 387
-#
-#    Further, we strongly encourage you to obtain the latest version of 
-#    GRMONTY directly from our distribution website:
-#    http://rainman.astro.illinois.edu/codelib/
-#
-#    GRMONTY is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 2 of the License, or
-#    (at your option) any later version.
-#
-#    GRMONTY is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with GRMONTY; if not, write to the Free Software
-#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-#
-#***********************************************************************************/
-#
-# requires an openmp-enabled version of gcc
-#
+# Compiler and flags
 CC = gcc
-CFLAGS = -pg -g  -Wall -O0 -fopenmp
+CFLAGS = -pg -g -Wall -O0 -fopenmp
 LDFLAGS = -lm -lgsl -lgslcblas -fopenmp
 
-SRCS = grmonty.c compton.c init_geometry.c tetrads.c geodesics.c \
-radiation.c jnu_mixed.c hotcross.c track_super_photon.c \
-scatter_super_photon.c harm_model.c harm_utils.c hamr_model.c init_harm_data.c init_hamr_data.c 
- 
-OBJS = grmonty.o compton.o init_geometry.o tetrads.o geodesics.o \
-radiation.o jnu_mixed.o hotcross.o track_super_photon.o \
-scatter_super_photon.o harm_model.o harm_utils.o hamr_model.o init_harm_data.o init_hamr_data.o
+# Source files
+SRCS = $(SRC_DIR)/grmonty.c $(SRC_DIR)/compton.c $(SRC_DIR)/init_geometry.c \
+       $(SRC_DIR)/tetrads.c $(SRC_DIR)/geodesics.c $(SRC_DIR)/radiation.c \
+       $(SRC_DIR)/jnu_mixed.c $(SRC_DIR)/hotcross.c \
+       $(SRC_DIR)/track_super_photon.c $(SRC_DIR)/scatter_super_photon.c \
+       $(SRC_DIR)/harm_model.c $(SRC_DIR)/harm_utils.c \
+       $(SRC_DIR)/hamr_model.c $(SRC_DIR)/init_harm_data.c \
+       $(SRC_DIR)/init_hamr_data2D.c $(SRC_DIR)/init_hamr_data3D.c 
 
-INCS = decs.h constants.h harm_model.h
+# Object files
+OBJS = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 
-grmonty : $(OBJS) $(INCS) makefile 
-	$(CC) $(CFLAGS) -o grmonty $(OBJS) $(LDFLAGS)
+# Include files
+INCS = $(SRC_DIR)/decs.h $(SRC_DIR)/constants.h $(SRC_DIR)/harm_model.h
 
-$(OBJS) : $(INCS) makefile
+# Executable
+EXECUTABLE = grmonty
 
+# Build rule
+$(EXECUTABLE): $(OBJS) $(INCS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -o $(EXECUTABLE) $(OBJS) $(LDFLAGS)
+
+# Compile rule
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(INCS) | $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# Create build directory if it doesn't exist
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+# Clean rule
 clean:
-	/bin/rm *.o 
-
+	/bin/rm -rf $(BUILD_DIR) grmonty
