@@ -6,8 +6,8 @@ BUILD_DIR = build
 
 # Compiler and flags
 CC = gcc
-CFLAGS = -pg -g -Wall -O0 -fopenmp
-LDFLAGS = -lm -lgsl -lgslcblas -fopenmp
+CFLAGS = -pg -g -I/home/pedro/gsl/include -Wall -O0 -fopenmp
+LDFLAGS = -L/home/pedro/gsl/lib -lm -lgsl -lgslcblas -fopenmp
 
 # Source files
 SRCS = $(SRC_DIR)/grmonty.c $(SRC_DIR)/compton.c $(SRC_DIR)/init_geometry.c \

@@ -54,8 +54,9 @@
 
 
 #define MAXNSTEP	1280000
+int photon_scattered = 0;
 
-void track_super_photon(struct of_photon *ph)
+void track_super_photon(struct of_photon *ph, int round, int photon_index)
 {
 	int bound_flag;
 	double dtau_scatt, dtau_abs, dtau;
@@ -71,7 +72,7 @@ void track_super_photon(struct of_photon *ph)
 	double Gcov[NDIM][NDIM], Ucon[NDIM], Ucov[NDIM], Bcon[NDIM],
 	    Bcov[NDIM];
 	int nstep = 0;
-
+	double var_id = 0;
 	/* quality control */
 	if (isnan(ph->X[0]) ||
 	    isnan(ph->X[1]) ||
@@ -109,8 +110,12 @@ void track_super_photon(struct of_photon *ph)
 
 	/* Initialize dK/dlam */
 	init_dKdlam(ph->X, ph->K, ph->dKdlam);
-	// fprintf(stderr, "Outside everything dKcon[0] = %lf, dKcon[1] = %lf, dKcon[2] = %lf, dKcon[3] = %lf\n", ph->dKdlam[0], ph->dKdlam[1], ph->dKdlam[2], ph->dKdlam[3]);
-	// exit(1);
+
+	if(photon_index == 4821 && round == 0)
+	{
+		printf("alpha_Scatti = %le, ph->E0 = %le, nu = %le\n", alpha_scatti, ph->E0s, nu);
+	}
+
 	while (!stop_criterion(ph)) {
 		/* Save initial position/wave vector */
 		Xi[0] = ph->X[0];
@@ -141,27 +146,25 @@ void track_super_photon(struct of_photon *ph)
 
 		/* allow photon to interact with matter, */
 		#if(HAMR)
-		// for(int i = 0; i < NDIM; i++)
-		// for(int j = 0; j < NDIM; j++){
-		// fprintf(stderr, "Gcov[%d][%d] = %lf\n", i, j, Gcov[i][j]);
-		// }
 		gcov_func_hamr(ph->X, Gcov);
-		// fprintf(stderr, "X[0] = %lf, X[1] = %lf, X[2] = %lf, X[3] = %lf\n", ph->X[0], ph->X[1], ph->X[2], ph->X[3]);
-		// for(int i = 0; i < NDIM; i++)
-		// for(int j = 0; j < NDIM; j++){
-		// fprintf(stderr, "Gcov[%d][%d] = %lf\n", i, j, Gcov[i][j]);
-		// }
-		//gcov_func(ph->X, Gcov);
 		#else
 		gcov_func(ph->X, Gcov);
 		#endif
 		get_fluid_params(ph->X, Gcov, &Ne, &Thetae, &B, Ucon, Ucov,
 				 Bcon, Bcov);
+		if(!(alpha_absi > 0. || alpha_scatti > 0. || Ne > 0.) && photon_index == 4821 && round == 0){
+			printf("one of them is negative, alpha_absi = %le, alpha_scatti = %le, Ne = %le\n", alpha_absi, alpha_scatti, Ne);
+			exit(1);
+		}
 		if (alpha_absi > 0. || alpha_scatti > 0. || Ne > 0.) {
 
 			bound_flag = 0;
-			if (Ne == 0.)
+			if (Ne == 0.){
 				bound_flag = 1;
+				if(photon_index == 4821 && round == 0){
+					printf("Ne = %le, boundflag reached!, (%le, %le, %le)\n", Ne, ph->X[1], ph->X[2], ph->X[3]);
+				}
+			}
 			if (!bound_flag) {
 				theta =
 				    get_bk_angle(ph->X, ph->K, Ucov, Bcov,
@@ -215,8 +218,14 @@ void track_super_photon(struct of_photon *ph)
 				bi = bf;
 			}
 
+			
 			x1 = -log(monty_rand());
+			x1 = -log(0.99);
 			php.w = ph->w / bias;
+			if(round == 0 && photon_index == 4821){
+				printf("dtau_scatt = %le, photon_index = %d, x1 = %le, alpha_absi = %le, alpha_scatti = %le, Ne = %le\n", dtau_scatt, photon_index, x1, alpha_absi, alpha_scatti, Ne);
+				
+			}
 			if (bias * dtau_scatt > x1 && php.w > WEIGHT_MIN) {
 				if (isnan(php.w) || isinf(php.w)) {
 					fprintf(stderr,
@@ -280,7 +289,16 @@ void track_super_photon(struct of_photon *ph)
 					if (ph->w < 1.e-100) {	/* must have been a problem popping k back onto light cone */
 						return;
 					}
-					track_super_photon(&php);
+
+				if(round == 0){
+				#pragma omp atomic
+					photon_scattered +=1;
+					if(var_id == 0 && photon_index == 4821){
+						var_id = 123123;
+						printf("photon_index scattered = %d\n", photon_index);
+					}
+				}
+					track_super_photon(&php, round +1, photon_index);
 				}
 
 				theta =
@@ -318,6 +336,7 @@ void track_super_photon(struct of_photon *ph)
 								    dtau))));
 				else
 					ph->w *= exp(-dtau);
+			
 			}
 		}
 
@@ -335,9 +354,10 @@ void track_super_photon(struct of_photon *ph)
 	}
 
 	/* accumulate result in spectrum on escape */
-	if (record_criterion(ph) && nstep < MAXNSTEP)
+	if(1){
+	//if (record_criterion(ph) && nstep < MAXNSTEP)
 		record_super_photon(ph);
-
+	}
 	/* done! */
 	return;
 }

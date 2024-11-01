@@ -81,7 +81,7 @@
  */
 
 #include "decs.h"
-
+#include <string.h>
 /* defining declarations for global variables */
 struct of_geom *geom;
 int N1, N2, N3, n_within_horizon;
@@ -142,10 +142,15 @@ int main(int argc, char *argv[])
 	starttime = time(NULL);
 	quit_flag = 0;
 
+
+	struct of_photon * superphotons_array;
+	superphotons_array = (struct of_photon *)malloc(800000 * sizeof(struct of_photon));
 	fprintf(stderr, "Entering main loop...\n");
 	fflush(stderr);
-
-#pragma omp parallel private(ph)
+	int count =0;
+	int local_index = 0;
+	FILE *file = fopen("../grmonty/superphotons.bin", "rb");
+#pragma omp parallel private(ph, local_index)
 	{
 
 		while (1) {
@@ -153,14 +158,28 @@ int main(int argc, char *argv[])
 			/* get pseudo-quanta */
 #pragma omp critical (MAKE_SPHOT)
 			{
-				if (!quit_flag)
+				if (!quit_flag){
 					make_super_photon(&ph, &quit_flag);
+				}
+					if(count < 800000){
+						fread(&ph, sizeof(struct of_photon), 1, file);
+					}
+					else{
+						quit_flag = 1;
+					}
+					if(count == 4821){
+						printf("ph->E0s = %le\n", ph.E0s);
+					}
+					//memcpy(&superphotons_array[count], &ph, sizeof(struct of_photon));
+					local_index = count;
+					count++;
+
 			}
 			if (quit_flag)
 				break;
 
 			/* push them around */
-			track_super_photon(&ph);
+			track_super_photon(&ph,0, local_index);
 
 			/* step */
 #pragma omp atomic
@@ -188,8 +207,11 @@ int main(int argc, char *argv[])
 		omp_reduce_spect();
 	}
 #endif
+	printf("Total number of photons scattered = %d\n", photon_scattered);
 	report_spectrum((int) N_superph_made);
-
+		// FILE *file = fopen("superphotons.bin", "wb");
+		// fwrite(superphotons_array, sizeof(struct of_photon), 800000, file);
+		// fclose(file);
 	/* done! */
 	return (0);
 

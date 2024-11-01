@@ -418,11 +418,6 @@ void gcov_func_hamr(double *X, double gcovp[][NDIM])
 void gcon_func_hamr(double gcov[][NDIM], double gcon[][NDIM])
 {
   invert_matrix( gcov, gcon );
-  	// for (int i = 0; i<NDIM; i++){
-	// 	for (int j = 0; j<NDIM; j++){
-	// 		fprintf(stderr, "Resultado final: gcon[%d][%d] = %le \n", i, j, gcon[i][j]);
-	// 	}
-	// }
 }
 
 // void gcon_func_hamr(double *X, double gcon[][NDIM])
