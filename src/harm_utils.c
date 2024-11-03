@@ -181,9 +181,8 @@ void init_weight_table(void)
 #pragma omp barrier
 	}
 #pragma omp parallel for schedule(static) private(i)
-	for (i = 0; i <= N_ESAMP; i++){
+	for (i = 0; i <= N_ESAMP; i++)
 		wgt[i] = log(sum[i] / (HPL * Ns));
-	}
 
 	fprintf(stderr, "done.\n\n");
 	fflush(stderr);
@@ -263,7 +262,7 @@ static void init_zone(int i, int j, int k, double *nz, double *dnmax)
 		fprintf(stderr,
 			"warning: outside of nint table range %g...change in harm_utils.c\n",
 			Bmag * Thetae * Thetae);
-		fprintf(stderr, "lbth = %le, lb_min = %le, dlb = %le l = %d\n", lbth, lb_min, dlb, l);
+		fprintf(stderr, "lbth = %le, lb_min = %le, dlb = %le l = %d, Bmag = %le, Thetae = %le, (%d, %d)\n", lbth, lb_min, dlb, l, Bmag, Thetae, i,j);
 		ninterp = 0.;
 		*dnmax = 0.;
 		for (l = 0; l <= N_ESAMP; l++) {
@@ -299,7 +298,6 @@ static void init_zone(int i, int j, int k, double *nz, double *dnmax)
 	}
 
 	*nz = geom[SPATIAL_INDEX2D(i,j)].g * Ne * Bmag * Thetae * Thetae * ninterp / K2;
-
 	if (*nz > Ns * log(NUMAX / NUMIN)) {
 		fprintf(stderr,
 			"Something very wrong in zone %d %d: \nB=%g  Thetae=%g  K2=%g  ninterp=%g\n\n",
@@ -352,7 +350,6 @@ int get_zone(int *i, int *j, int *k, double *dnmax)
 
 	return in2gen;
 }
-
 
 void sample_zone_photon(int i, int j, int k, double dnmax, struct of_photon *ph)
 {

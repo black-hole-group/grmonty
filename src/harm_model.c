@@ -107,6 +107,7 @@ void init_model(char *args[])
 int n2gen = -1;
 double dnmax;
 int zone_i, zone_j, zone_k;
+
 void make_super_photon(struct of_photon *ph, int *quit_flag)
 {
 
@@ -134,14 +135,13 @@ double bias_func(double Te, double w)
 {
 	return 1;
 	double bias, max, avg_num_scatt;
-	max = 0.5 * w / WEIGHT_MIN;
-	avg_num_scatt = N_scatt / (1. * N_superph_recorded + 1.);
 
+	max = 0.5 * w / WEIGHT_MIN;
+
+	avg_num_scatt = N_scatt / (1. * N_superph_recorded + 1.);
 	bias =
 	    100. * Te * Te / (bias_norm * max_tau_scatt *
 			      (avg_num_scatt + 2));
-
-	// bias = 100. * Te * Te/(bias_norm * max_tau_scatt);
 
 	if (bias < TP_OVER_TE)
 		bias = TP_OVER_TE;
@@ -343,6 +343,10 @@ void gcon_func(double *X, double gcon[][NDIM])
 	// transformation for Kerr-Schild -> modified Kerr-Schild 
 	hfac = M_PI + (1. - hslope) * M_PI * cos(2. * M_PI * X[2]);
 
+	#if(HAMR)
+	hfac = 1.;
+	#endif
+
 	gcon[TT][TT] = -1. - 2. * r * irho2;
 	gcon[TT][1] = 2. * irho2;
 
@@ -382,6 +386,12 @@ void gcov_func(double *X, double gcov[][NDIM])
 	hfac = M_PI + (1. - hslope) * M_PI * cos(2. * M_PI * X[2]);
 	pfac = 1.;
 
+	#if(HAMR)
+	tfac = 1.;
+	rfac = 1.;
+	hfac = 1.;
+	pfac = 1.;
+	#endif
 
 	gcov[TT][TT] = (-1. + 2. * r / rho2) * tfac * tfac;
 	gcov[TT][1] = (2. * r / rho2) * tfac * rfac;
@@ -597,7 +607,6 @@ void get_connection(double X[4], double lconn[4][4][4])
 
 #define RMAX	100.
 #define ROULETTE	1.e4
-
 int stop_criterion(struct of_photon *ph)
 {
 	double wmin, X1min, X1max;
@@ -609,14 +618,19 @@ int stop_criterion(struct of_photon *ph)
 	X1max = log(RMAX);	/* this is coordinate and simulation
 				   specific: stop at large distance */
 
+	//fprintf(stderr, "w is: %le, wmin is: %le\n", ph->w, wmin);
+	//fprintf(stderr, "X[1] = %le, X1min = %le\n", ph ->X[1], X1min);
 	if (ph->X[1] < X1min)
+		//fprintf(stderr, "it's getting here 1\n");
 		return 1;
 
 	if (ph->X[1] > X1max) {
 		if (ph->w < wmin) {
 			if (monty_rand() <= 1. / ROULETTE) {
+				//fprintf(stderr, "it's getting here 2\n");
 				ph->w *= ROULETTE;
 			} else
+				//fprintf(stderr, "it's getting here 3\n");
 				ph->w = 0.;
 		}
 		return 1;
@@ -625,8 +639,10 @@ int stop_criterion(struct of_photon *ph)
 	if (ph->w < wmin) {
 		if (monty_rand() <= 1. / ROULETTE) {
 			ph->w *= ROULETTE;
+			//fprintf(stderr, "it's getting here 4\n");
 		} else {
 			ph->w = 0.;
+			//fprintf(stderr, "it's getting here 5\n");
 			return 1;
 		}
 	}
@@ -641,6 +657,7 @@ int record_criterion(struct of_photon *ph)
 	const double X1max = log(RMAX);
 	/* this is coordinate and simulation
 	   specific: stop at large distance */
+	//fprintf(stderr, "X[1] coord = %le, X1max = %le\n", ph->X[1], X1max);
 	if (ph->X[1] > X1max)
 		return (1);
 
@@ -652,6 +669,7 @@ int record_criterion(struct of_photon *ph)
 
 /* EPS really ought to be related to the number of
    zones in the simulation. */
+//#define EPS	1e-5
 #define EPS   0.04
 
 
@@ -661,7 +679,7 @@ double stepsize(double X[NDIM], double K[NDIM])
 	double idlx1, idlx2, idlx3;
 	#if(HAMR)
 		double x2_normal, stopx2_normal;
-		x2_normal = (1. + X[2])/2.;
+		x2_normal = (1 + X[2])/2;
 		stopx2_normal = 1.; 
 		dlx2 = EPS * GSL_MIN(x2_normal, stopx2_normal - x2_normal) / (fabs(K[2]) + SMALL);
 	#else
@@ -675,6 +693,11 @@ double stepsize(double X[NDIM], double K[NDIM])
 	idlx3 = 1. / (fabs(dlx3) + SMALL);
 
 	dl = 1. / (idlx1 + idlx2 + idlx3);
+	//fprintf(stderr, "dlx1 = %le, dlx2 = %le, dlx3 = %le, idlx1 = %le, idlx2 = %le, idlx3 = %le, dl = %le\n", dlx1, dlx2, dlx3, idlx1, idlx2, idlx3, dl);
+	// for (int i = 0; i < NDIM; i++){
+	// 	fprintf(stderr, "X[%d] = %le, k[%d] = %le\n", i, X[i], i, K[i]);
+	// }
+	//exit(1);
 
 	return (dl);
 }
@@ -703,13 +726,12 @@ void record_super_photon(struct of_photon *ph)
 	/* currently, bin in x2 coordinate */
 
 	/* get theta bin, while folding around equator */
-	#if(HAMR)
-		dx2 = (stopx[2] - startx[2]) / (2.0 * N_THBINS);
-		ix2 = ((ph->X[2]) < 0) ? (int)((1 +ph->X[2]) / dx2) : (int)((stopx[2] - ph->X[2]) / dx2);
-	#else
-		dx2 = (stopx[2] - startx[2]) / (2.0 * N_THBINS);
-    	ix2 = (ph->X[2] < 0.5 * (startx[2] + stopx[2])) ? (int)(ph->X[2] / dx2) : (int)((stopx[2] - ph->X[2]) / dx2);
-	#endif
+	dx2 = (stopx[2] - startx[2]) / (2. * N_THBINS);
+	if (ph->X[2] < 0.5 * (startx[2] + stopx[2]))
+		ix2 = (int) (ph->X[2] / dx2);
+	else
+		ix2 = (int) ((stopx[2] - ph->X[2]) / dx2);
+
 	/* check limits */
 	if (ix2 < 0 || ix2 >= N_THBINS)
 		return;

@@ -144,7 +144,7 @@ struct of_grid {
 /** global variables **/
 /** model independent */
 extern gsl_rng *r;
-extern int photon_scattered;
+
 extern double F[N_ESAMP + 1], wgt[N_ESAMP + 1];
 
 extern int Ns;
@@ -195,7 +195,7 @@ extern double max_tau_scatt, Ladv, dMact, bias_norm;
 
 /** model-independent subroutines **/
 /* core monte carlo/radiative transport routines */
-void track_super_photon(struct of_photon *ph, int round, int photon_index);
+void track_super_photon(struct of_photon *ph);
 void record_super_photon(struct of_photon *ph);
 void report_spectrum(int N_superph_made);
 void scatter_super_photon(struct of_photon *ph, struct of_photon *php,

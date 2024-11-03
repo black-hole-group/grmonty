@@ -29,7 +29,7 @@ void init_hamr_data(char *fname)
 	int i, j, k;
 
 	/* header variables not used except locally */
-	double t, a, gam;
+	double t, gam;
 	double r, h, gdet;
 	double Ucon[NDIM], Ucov[NDIM], Bcon[NDIM], Bcov[NDIM];
 	int int_size = sizeof(int);
@@ -59,7 +59,8 @@ void init_hamr_data(char *fname)
 	check_scan_error(fread(&gam, double_size, 1, fp), 1);
 	R0 = 0;
 	hslope = 0;
-	fprintf(stderr, "Resolution: %d, %d, %d\n", N1, N2, N3);
+	fprintf(stderr, "Resolution: %d, %d, %d at snapshot with time t = %.2f\n", N1, N2, N3, t);
+	fprintf(stderr, "This simulation has spin = %.4f and adiabatic index = %.3f\n", a, gam);
 
 
 	
@@ -86,7 +87,7 @@ void init_hamr_data(char *fname)
 	    0.5 * ((1. + 2. / 3. * (TP_OVER_TE + 1.) / (TP_OVER_TE + 2.)) +
 		   gam);
 	Thetae_unit = (two_temp_gam - 1.) * (MP / ME) / (1. + TP_OVER_TE);
-
+	fprintf(stderr, "Thetae_unit = %le\n", Thetae_unit);
 	dMact = 0.;
 	Ladv = 0.;
 	bias_norm = 0.;
