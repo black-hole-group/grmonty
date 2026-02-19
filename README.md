@@ -5,6 +5,12 @@ Based on [Dolence et al. 2009 ApJ](http://adsabs.harvard.edu/abs/2009ApJS..184..
 
 GRMONTY is parallelized using [OpenMP](https://en.wikipedia.org/wiki/OpenMP). This version is configured to use input from [`harm2d`](http://rainman.astro.illinois.edu/codelib/codes/ham2d/src/).
 
+---
+**NEWS**  
+There is now [a GPU-accelerated version of grmonty: GPUmonty](https://github.com/black-hole-group/gpumonty). Compatible with NVIDIA GPUs. Over 10x faster than grmonty.
+
+---
+
 # quick start
 
 unpack the tarball:
