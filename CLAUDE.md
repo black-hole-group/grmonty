@@ -13,13 +13,13 @@ make clean && make 2>&1 | head -50  # check for compiler warnings
 Run with sample data:
 ```bash
 export OMP_NUM_THREADS=8
-./grmonty 5000000 dump019 4.e19
+./grmonty 5000000 data/dump019 4.e19
 # Arguments: photon_estimate  harm_dump_file  mass_unit(CGS)
 ```
 
 Verify output:
 ```bash
-diff grmonty.spec grmonty_spec_verify
+diff grmonty.spec test/grmonty_spec_verify
 ```
 
 Plot spectrum with Python:
@@ -54,27 +54,28 @@ GRMONTY is a relativistic Monte Carlo radiative transfer code (Dolence et al. 20
 **Key files:**
 | File | Role |
 |------|------|
-| `grmonty.c` | `main()`: argument parsing, OMP parallel loop, spectrum reduction |
-| `decs.h` | Master header: all structs, extern globals, macros, function prototypes |
-| `constants.h` | CGS physical constants |
-| `harm_model.c/h` | Pluggable model layer (HARM-specific metric + fluid interface) |
-| `track_super_photon.c` | Core MC transport: geodesic stepping, opacity integration, scattering |
-| `geodesics.c` | Predictor-corrector geodesic integrator (`push_photon`) |
-| `tetrads.c` | Tetrad algebra for frame transformations |
-| `compton.c` | Klein-Nishina sampling, Mersenne Twister RNG via GSL |
-| `scatter_super_photon.c` | Compton event: boost to electron rest frame, scatter, boost back |
-| `radiation.c` | Model-independent opacity/emissivity utilities |
-| `jnu_mixed.c` | Thermal synchrotron emissivity + lookup tables (uses GSL Bessel functions) |
-| `hotcross.c` | Hot Compton cross-section 2D lookup table; reads `hotcross.dat` |
-| `harm_utils.c` | Grid helpers: storage allocation, coordinate mapping, bilinear interpolation |
+| `src/main.c` | `main()`: argument parsing, OMP parallel loop, spectrum reduction |
+| `include/decs.h` | Master header: all structs, extern globals, macros, function prototypes |
+| `include/constants.h` | CGS physical constants |
+| `include/harm_model.h` | Model-specific declarations |
+| `src/model/harm_model.c` | Pluggable model layer (HARM-specific metric + fluid interface) |
+| `src/model/track_super_photon.c` | Core MC transport: geodesic stepping, opacity integration, scattering |
+| `src/geometry/geodesics.c` | Predictor-corrector geodesic integrator (`push_photon`) |
+| `src/geometry/tetrads.c` | Tetrad algebra for frame transformations |
+| `src/physics/compton.c` | Klein-Nishina sampling, Mersenne Twister RNG via GSL |
+| `src/physics/scatter_super_photon.c` | Compton event: boost to electron rest frame, scatter, boost back |
+| `src/physics/radiation.c` | Model-independent opacity/emissivity utilities |
+| `src/physics/jnu_mixed.c` | Thermal synchrotron emissivity + lookup tables (uses GSL Bessel functions) |
+| `src/physics/hotcross.c` | Hot Compton cross-section 2D lookup table; reads `data/hotcross.dat` |
+| `src/model/harm_utils.c` | Grid helpers: storage allocation, coordinate mapping, bilinear interpolation |
 
 **Dependencies:** GSL (RNG, Bessel functions, integration), OpenMP (`-fopenmp`), libm. No MPI or GPU code in this repo (see [GPUmonty](https://github.com/black-hole-group/gpumonty) for GPU port).
 
 ## Code Style
 
 - K&R C style; tabs for indentation; ~80 character line limit
-- All `.c` files include `"decs.h"` first, then `"harm_model.h"` if model-specific
-- Standard library headers live in `decs.h`; do not re-include them in `.c` files
+- All `.c` files include `<decs.h>` first (angle brackets), then `<harm_model.h>` if model-specific
+- Standard library headers live in `include/decs.h`; do not re-include them in `.c` files
 - Functions and variables: `lowercase_with_underscores`
 - Macros and constants: `UPPERCASE_WITH_UNDERSCORES`
 - Structs: `struct of_<descriptive_name>`
@@ -84,5 +85,5 @@ GRMONTY is a relativistic Monte Carlo radiative transfer code (Dolence et al. 20
 - Floating point: `double` throughout; `fabs()` for absolute values
 - Fatal errors: `fprintf(stderr, ...); exit(1);`
 - Progress/diagnostics: `fprintf(stderr, ...); fflush(stderr);`
-- New source files must be added to `SRCS` and `OBJS` in `makefile`, and prototypes added to `decs.h`
+- New source files go in the appropriate subdirectory (`src/physics/`, `src/geometry/`, or `src/model/`), must be added to `SRCS` in `makefile`, and prototypes added to `include/decs.h`
 - All source files carry the GPL v3 copyright header
