@@ -11,35 +11,43 @@ There is now [a GPU-accelerated version of grmonty: GPUmonty](https://github.com
 
 ---
 
-# quick start
+# Directory Structure
 
-unpack the tarball:
+```
+grmonty/
+├── src/
+│   ├── main.c              # Entry point
+│   ├── physics/            # Radiation physics (compton, synchrotron)
+│   ├── geometry/           # Geodesics, tetrads
+│   └── model/              # HARM model implementation
+├── include/                # Header files (decs.h, constants.h, harm_model.h)
+├── data/                   # Input data files (dump019, hotcross.dat)
+├── test/                   # Test reference files
+├── scripts/                # Utility scripts (plspec.m, speclab.m)
+├── build/                  # Build artifacts (generated)
+└── makefile
+```
 
-    tar -xzvf grmonty.tgz
+# Quick Start
 
-make (requires openmp enabled gcc):
-
-    make
-
-set number of threads for `csh` and 8 threads:
-
-    setenv OMP_NUM_THREADS 8
-
-if using `bash`:
-
-    export OMP_NUM_THREADS=8
-
-run the code on the supplied harm output file:
-
-    ./grmonty 5000000 dump019 4.e19 
+```bash
+make                                    # Build (requires OpenMP-enabled gcc)
+export OMP_NUM_THREADS=8                # Set threads (bash)
+./grmonty 5000000 data/dump019 4.e19    # Run
+```
 
 Arguments are:
-
 - estimate of photon number (actual number is probabilistic due to scattering)
 - harm dump file for model
 - mass unit (few x 10^19 is appropriate for Sgr A*)
 
-This will output spectrum to `grmonty.spec`  which should be identical to `grmonty_spec_verify`.
+This will output spectrum to `grmonty.spec` which should be identical to `test/grmonty_spec_verify`.
+
+# Verification
+
+```bash
+diff grmonty.spec test/grmonty_spec_verify
+```
 
 # Plotting
 
@@ -52,11 +60,11 @@ s.grmonty('grmonty.spec')
 plot(s.lognu, s.ll)
 ```
 
-Old-fashioned way: Use the [SM](http://www.astro.princeton.edu/~rhl/sm/) script `plspec.m` to plot up broad-band spectral energy distribution.
+Old-fashioned way: Use the [SM](http://www.astro.princeton.edu/~rhl/sm/) scripts in `scripts/` to plot up broad-band spectral energy distribution.
 
 # Calculate spectra from other sources
 
-Replace `harm_model.c` with your own source model.  Begin by modifying `harm_model.c`. You must supply
+Replace `src/model/harm_model.c` with your own source model. You must supply:
 
 ```
 init_model 
@@ -71,8 +79,6 @@ gcon_func
 gcov_func 
 get_connection
 ```
-
-in the model file.
 
 # TODO
 

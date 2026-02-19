@@ -40,7 +40,7 @@
 ***********************************************************************************/
 
 
-#include "decs.h"
+#include <decs.h>
 
 /* Harm globals */
 extern double ****econ;

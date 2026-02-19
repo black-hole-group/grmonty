@@ -46,7 +46,7 @@ model-independent radiation-related utilities.
 
 */
 
-#include "decs.h"
+#include <decs.h>
 
 double Bnu_inv(double nu, double Thetae)
 {

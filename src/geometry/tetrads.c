@@ -46,7 +46,7 @@ all functions related to creation and manipulation of tetrads
 
 */
 
-#include "decs.h"
+#include <decs.h>
 
 
 /* input and vectors are contravariant (index up) */

@@ -46,9 +46,9 @@
 
 */
 
-#include "decs.h"
+#include <decs.h>
 #define global
-#include "harm_model.h"
+#include <harm_model.h>
 #undef global
 
 struct of_spectrum spect[N_THBINS][N_EBINS] = { };

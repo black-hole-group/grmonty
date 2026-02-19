@@ -1,0 +1,9 @@
+# Build artifacts
+build/
+*.o
+
+# Output files
+grmonty.spec
+
+# Executable
+grmonty

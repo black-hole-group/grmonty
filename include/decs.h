@@ -54,7 +54,7 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_integration.h>
 #include <omp.h>
-#include "constants.h"
+#include <constants.h>
 
 #define NDIM	4
 #define NPRIM	8

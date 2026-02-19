@@ -40,7 +40,7 @@
 ***********************************************************************************/
 
 
-#include "decs.h"
+#include <decs.h>
 /*
 
 this is the main photon orbit integrator 

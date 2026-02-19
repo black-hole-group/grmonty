@@ -42,25 +42,91 @@
 #
 # requires an openmp-enabled version of gcc
 #
+
 CC = gcc
-CFLAGS = -Wall -O2 -fopenmp
+CFLAGS = -Wall -O2 -fopenmp -I$(INCDIR)
 LDFLAGS = -lm -lgsl -lgslcblas -fopenmp
 
-SRCS = grmonty.c compton.c init_geometry.c tetrads.c geodesics.c \
-radiation.c jnu_mixed.c hotcross.c track_super_photon.c \
-scatter_super_photon.c harm_model.c harm_utils.c init_harm_data.c
- 
-OBJS = grmonty.o compton.o init_geometry.o tetrads.o geodesics.o \
-radiation.o jnu_mixed.o hotcross.o track_super_photon.o \
-scatter_super_photon.o harm_model.o harm_utils.o init_harm_data.o
+SRCDIR = src
+INCDIR = include
+BUILDDIR = build
 
-INCS = decs.h constants.h harm_model.h
+SRCS = $(SRCDIR)/main.c \
+       $(SRCDIR)/physics/compton.c \
+       $(SRCDIR)/physics/radiation.c \
+       $(SRCDIR)/physics/jnu_mixed.c \
+       $(SRCDIR)/physics/hotcross.c \
+       $(SRCDIR)/physics/scatter_super_photon.c \
+       $(SRCDIR)/geometry/init_geometry.c \
+       $(SRCDIR)/geometry/tetrads.c \
+       $(SRCDIR)/geometry/geodesics.c \
+       $(SRCDIR)/model/harm_model.c \
+       $(SRCDIR)/model/harm_utils.c \
+       $(SRCDIR)/model/init_harm_data.c \
+       $(SRCDIR)/model/track_super_photon.c
 
-grmonty : $(OBJS) $(INCS) makefile 
+OBJS = $(BUILDDIR)/main.o \
+       $(BUILDDIR)/compton.o \
+       $(BUILDDIR)/radiation.o \
+       $(BUILDDIR)/jnu_mixed.o \
+       $(BUILDDIR)/hotcross.o \
+       $(BUILDDIR)/scatter_super_photon.o \
+       $(BUILDDIR)/init_geometry.o \
+       $(BUILDDIR)/tetrads.o \
+       $(BUILDDIR)/geodesics.o \
+       $(BUILDDIR)/harm_model.o \
+       $(BUILDDIR)/harm_utils.o \
+       $(BUILDDIR)/init_harm_data.o \
+       $(BUILDDIR)/track_super_photon.o
+
+INCS = $(INCDIR)/decs.h $(INCDIR)/constants.h $(INCDIR)/harm_model.h
+
+grmonty : $(BUILDDIR) $(OBJS) $(INCS) makefile 
 	$(CC) $(CFLAGS) -o grmonty $(OBJS) $(LDFLAGS)
 
-$(OBJS) : $(INCS) makefile
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
+
+$(BUILDDIR)/main.o: $(SRCDIR)/main.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/compton.o: $(SRCDIR)/physics/compton.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/radiation.o: $(SRCDIR)/physics/radiation.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/jnu_mixed.o: $(SRCDIR)/physics/jnu_mixed.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/hotcross.o: $(SRCDIR)/physics/hotcross.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/scatter_super_photon.o: $(SRCDIR)/physics/scatter_super_photon.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/init_geometry.o: $(SRCDIR)/geometry/init_geometry.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/tetrads.o: $(SRCDIR)/geometry/tetrads.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/geodesics.o: $(SRCDIR)/geometry/geodesics.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/harm_model.o: $(SRCDIR)/model/harm_model.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/harm_utils.o: $(SRCDIR)/model/harm_utils.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/init_harm_data.o: $(SRCDIR)/model/init_harm_data.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(BUILDDIR)/track_super_photon.o: $(SRCDIR)/model/track_super_photon.c $(INCS) makefile
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	/bin/rm *.o 
+	/bin/rm -rf $(BUILDDIR) *.o grmonty.spec
 
+.PHONY: clean

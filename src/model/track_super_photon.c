@@ -49,7 +49,7 @@
 
 */
 
-#include "decs.h"
+#include <decs.h>
 
 #define MAXNSTEP	1280000
 

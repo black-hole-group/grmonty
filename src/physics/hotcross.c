@@ -40,7 +40,7 @@
 ***********************************************************************************/
 
 
-#include "decs.h"
+#include <decs.h>
 
 /* 
 
@@ -65,7 +65,7 @@
 #define NW	220
 #define NT	80
 
-#define HOTCROSS	"hotcross.dat"
+#define HOTCROSS	"data/hotcross.dat"
 
 double table[NW + 1][NT + 1];
 double dlw, dlT, lminw, lmint;

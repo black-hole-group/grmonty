@@ -45,7 +45,7 @@
 
 */
 
-#include "decs.h"
+#include <decs.h>
 
 /* 
 	scatter photon ph into photon php at same position 

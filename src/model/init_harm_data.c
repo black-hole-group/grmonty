@@ -40,8 +40,8 @@
 ***********************************************************************************/
 
 
-#include "decs.h"
-#include "harm_model.h"
+#include <decs.h>
+#include <harm_model.h>
 /*
 
 get HARM simulation data from fname

@@ -80,7 +80,7 @@
 
  */
 
-#include "decs.h"
+#include <decs.h>
 
 /* defining declarations for global variables */
 struct of_geom **geom;
