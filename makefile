@@ -44,7 +44,7 @@
 #
 
 CC = gcc
-CFLAGS = -Wall -O2 -fopenmp -I$(INCDIR)
+CFLAGS = -Wall -O2 -fopenmp -fcommon -I$(INCDIR)
 LDFLAGS = -lm -lgsl -lgslcblas -fopenmp
 
 SRCDIR = src
