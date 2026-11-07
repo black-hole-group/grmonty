@@ -242,6 +242,8 @@ void track_super_photon(struct of_photon *ph)
 						 Bcov);
 
 				if (Ne > 0.) {
+					/* the child carries the parent's weight at the scattering point */
+					php.w = ph->w / bias;
 					scatter_super_photon(ph, &php, Ne,
 							     Thetae, B,
 							     Ucon, Bcon,
