@@ -801,7 +801,7 @@ void report_spectrum(int N_superph_made)
 			if (tau_scatt > max_tau_scatt)
 				max_tau_scatt = tau_scatt;
 
-			L += nuLnu * dOmega * dlE;
+			L += nuLnu * dOmega * dlE / (4. * M_PI);
 		}
 		fprintf(fp, "\n");
 	}
