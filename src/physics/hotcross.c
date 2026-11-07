@@ -243,11 +243,8 @@ double dNdgammae(double thetae, double gammae)
 {
 	double K2f;
 
-	if (thetae > 1.e-2) {
-		K2f = gsl_sf_bessel_Kn(2, 1. / thetae) * exp(1. / thetae);
-	} else {
-		K2f = sqrt(M_PI * thetae / 2.);
-	}
+	/* K2(1/thetae) exp(1/thetae), exact at every thetae */
+	K2f = gsl_sf_bessel_Kn_scaled(2, 1. / thetae);
 
 	return ((gammae * sqrt(gammae * gammae - 1.) / (thetae * K2f)) *
 		exp(-(gammae - 1.) / thetae));
